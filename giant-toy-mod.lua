@@ -601,7 +601,7 @@ Window._FaptaWings = {
 }
 -- Sword state lives in one table so the main chunk gains no extra top-level locals.
 Window._FaptaSword = {
-    ToyName = "PalletLightBrown",
+    ToyName = "LadderLightBrown",
     PartSize = Vector3.new(11.5, 1.5, 11.5),
     PartCount = 5,
     WaitSlotBase = 129,
@@ -1468,7 +1468,7 @@ end)
     SwordTab:AddSection("-- sword build --")
     SwordTab:AddParagraph(
         "Sword Required Parts",
-        "PalletLightBrown x5 per sword (SoundPart 11.5, 1.5, 11.5); Double mode needs x10 for two swords"
+        "LadderLightBrown x5 per sword; Double mode needs x10 for two swords"
     )
     SwordTab:AddButton("build sword", function()
         Sword.Build()
@@ -2994,14 +2994,28 @@ function autoSpawnSwordToys()
 
     local character = LP.Character
     local root = character and character:FindFirstChild("HumanoidRootPart")
-    local center = root and root.Position or Vector3.new(0, 15, 0)
+    local spawnCF = CFrame.new(
+        223.378479,
+        -5.64799404,
+        371.94281,
+        0.103086241,
+        0.402662873,
+        -0.909525096,
+        0,
+        0.914396703,
+        0.404819548,
+        0.994672477,
+        -0.041731324,
+        0.0942616984
+    )
+    local spawnRotation = Vector3.new(0, -84.08300018310547, 0)
     local spawnedSword = 0
     for index = current + 1, required do
         local ok = pcall(function()
             spawnRemote:InvokeServer(
                 Window._FaptaSword.ToyName,
-                CFrame.new(center + Vector3.new((index % 8) * 4, 15, math.floor(index / 8) * 4 + 20)),
-                Vector3.zero
+                spawnCF,
+                spawnRotation
             )
         end)
         if ok then
@@ -11679,6 +11693,12 @@ end)
     end
 
     local function findSwordPart(model)
+        if Sword.ToyName == "LadderLightBrown" then
+            local ladderSoundPart = model:FindFirstChild("SoundPart", true)
+            if ladderSoundPart and ladderSoundPart:IsA("BasePart") then
+                return ladderSoundPart
+            end
+        end
         for _, descendant in ipairs(model:GetDescendants()) do
             if
                 descendant.Name == "SoundPart"
