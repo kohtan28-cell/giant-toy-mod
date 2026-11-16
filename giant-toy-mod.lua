@@ -2911,10 +2911,8 @@ function autoSpawnRequiredToys()
     local assemblyCount = giantMode == "Double" and 2 or 1
     local required = {
         { Name = TOY_NAME, Count = assemblyCount * 22 },
+        { Name = HEAD_TOY_NAME, Count = assemblyCount },
     }
-    if not headlessEnabled then
-        table.insert(required, { Name = HEAD_TOY_NAME, Count = assemblyCount })
-    end
     if korbloxLegEnabled then
         table.insert(required, { Name = KORBLOX_LEG_TOY_NAME, Count = assemblyCount })
     end
