@@ -11553,7 +11553,7 @@ end)
     local function getHandSwordCF(armCF)
         -- The limb frame has +X toward the shoulder, so the hand end is at -X.
         local ladderHandYaw = Sword.ToyName == "LadderLightBrown"
-            and CFrame.Angles(0, math.rad(90), 0)
+            and CFrame.Angles(math.rad(22.5), math.rad(90), 0)
             or CFrame.new()
         return armCF
             * CFrame.new(-LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
@@ -11566,7 +11566,7 @@ end)
     -- profile holds it (so the sword does not move when the hand takes over).
     local function getGrabArmCF(giantTorsoCF)
         local ladderHandYaw = Sword.ToyName == "LadderLightBrown"
-            and CFrame.Angles(0, math.rad(90), 0)
+            and CFrame.Angles(math.rad(22.5), math.rad(90), 0)
             or CFrame.new()
         local armRelative = getArmRelativeCF() * ladderHandYaw * getHandCenterOffsetCF()
         return getBackSwordCF(giantTorsoCF)
