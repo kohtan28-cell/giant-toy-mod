@@ -2893,25 +2893,13 @@ function autoSpawnRequiredToys()
         return false
     end
 
-    local canSpawnToy = LP:FindFirstChild("CanSpawnToy")
-    if canSpawnToy and canSpawnToy.Value == false then
-        Window:Notify("AUTO SPAWN", "Waiting for Toy spawn permission...", 5)
-        local deadline = os.clock() + 15
-        while canSpawnToy.Value == false and os.clock() < deadline do
-            task.wait(0.1)
-        end
-        if canSpawnToy.Value == false then
-            Window:Notify("AUTO SPAWN ERROR", "Toy spawn permission was not granted", 6)
-            return false
-        end
-    end
-
     -- Spawn only the parts used by Be Giant. Normal uses one body;
-    -- Double uses two bodies. Orbit and sword Toys are intentionally excluded.
+    -- Double uses two bodies. Sword boards are also prepared automatically.
     local assemblyCount = giantMode == "Double" and 2 or 1
     local required = {
         { Name = TOY_NAME, Count = assemblyCount * 22 },
         { Name = HEAD_TOY_NAME, Count = assemblyCount },
+        { Name = Window._FaptaSword.ToyName, Count = Window._FaptaSword.PartCount * assemblyCount },
     }
     if korbloxLegEnabled then
         table.insert(required, { Name = KORBLOX_LEG_TOY_NAME, Count = assemblyCount })
@@ -2932,53 +2920,40 @@ function autoSpawnRequiredToys()
         end
 
         for index = current + 1, entry.Count do
-            local appeared = false
-            for _ = 1, 4 do
-                if canSpawnToy then
-                    local deadline = os.clock() + 10
-                    while canSpawnToy.Value == false and os.clock() < deadline do
-                        task.wait(0.1)
-                    end
+            local ok = pcall(function()
+                local rotation = Vector3.zero
+                local orientPart = Workspace:FindFirstChild("RotateOrientPart")
+                if orientPart then
+                    rotation = orientPart.Rotation
                 end
-                local ok = pcall(function()
-                    local rotation = Vector3.zero
-                    local orientPart = Workspace:FindFirstChild("RotateOrientPart")
-                    if orientPart then
-                        rotation = orientPart.Rotation
-                    end
-                    spawnRemote:InvokeServer(
-                        entry.Name,
-                        CFrame.new(
-                            spawnCenter.Position
-                                + Vector3.new((spawned % 8) * 4, 15, math.floor(spawned / 8) * 4 + 20)
-                        ),
-                        rotation
-                    )
-                end)
-                if ok then
-                    for _ = 1, 12 do
-                        task.wait(0.1)
-                        local count = 0
-                        for _, child in ipairs(toyFolder:GetChildren()) do
-                            if child.Name == entry.Name then
-                                count = count + 1
-                            end
-                        end
-                        if count >= index then
-                            appeared = true
-                            break
-                        end
-                    end
-                end
-                if appeared then
-                    break
-                end
-            end
-            if appeared then
+                spawnRemote:InvokeServer(
+                    entry.Name,
+                    CFrame.new(
+                        spawnCenter.Position
+                            + Vector3.new((spawned % 8) * 4, 15, math.floor(spawned / 8) * 4 + 20)
+                    ),
+                    rotation
+                )
+            end)
+            if ok then
                 spawned = spawned + 1
             else
                 failed = failed + 1
             end
+        end
+    end
+
+    -- Let the batch replicate once, instead of waiting after every Toy.
+    task.wait(1)
+    for _, entry in ipairs(required) do
+        local count = 0
+        for _, child in ipairs(toyFolder:GetChildren()) do
+            if child.Name == entry.Name then
+                count = count + 1
+            end
+        end
+        if count < entry.Count then
+            failed = failed + (entry.Count - count)
         end
     end
 
