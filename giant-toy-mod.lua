@@ -11540,8 +11540,9 @@ end)
         end
         local partSize = Sword.Sets[1][1].Part.Size
         local halfLength = math.max(partSize.X, partSize.Y, partSize.Z) * Sword.PartCount / 2
-        -- The hand is placed at the positive end of the connected ladder chain.
-        return CFrame.new(0, -halfLength, 0)
+        -- Grip slightly above/inward from the very end instead of exactly at the tip.
+        local gripInset = 3
+        return CFrame.new(0, -halfLength + gripInset, 0)
     end
 
     local function getBackSwordCF(giantTorsoCF)
