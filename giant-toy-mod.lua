@@ -11508,6 +11508,10 @@ end)
     local GIANT_HEAD_OFFSET = Vector3.new(0, 10.5, 0) -- head center in the torso frame
 
     local function getGripFlipCF()
+        if Sword.ToyName == "LadderLightBrown" then
+            -- The connected ladder rod has one fixed grip end for the right hand.
+            return CFrame.new()
+        end
         local profile = Sword.Profiles.Back
         local backRelativeCF = CFrame.new(profile.Position) * angleRotation(profile.Angle)
         local halfLength = Sword.PartSize.X * Sword.PartCount / 2
@@ -11542,7 +11546,7 @@ end)
         local halfLength = math.max(partSize.X, partSize.Y, partSize.Z) * Sword.PartCount / 2
         -- Grip slightly above/inward from the very end instead of exactly at the tip.
         local gripInset = 3
-        return CFrame.new(0, halfLength - gripInset, 0)
+        return CFrame.new(0, -halfLength + gripInset, 0)
     end
 
     local function getBackSwordCF(giantTorsoCF)
@@ -11553,7 +11557,7 @@ end)
     local function getHandSwordCF(armCF)
         -- The limb frame has +X toward the shoulder, so the hand end is at -X.
         local ladderHandYaw = Sword.ToyName == "LadderLightBrown"
-            and CFrame.Angles(math.rad(22.5), math.rad(90), 0)
+            and CFrame.Angles(0, math.rad(90), 0)
             or CFrame.new()
         return armCF
             * CFrame.new(-LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
@@ -11566,7 +11570,7 @@ end)
     -- profile holds it (so the sword does not move when the hand takes over).
     local function getGrabArmCF(giantTorsoCF)
         local ladderHandYaw = Sword.ToyName == "LadderLightBrown"
-            and CFrame.Angles(math.rad(22.5), math.rad(90), 0)
+            and CFrame.Angles(0, math.rad(90), 0)
             or CFrame.new()
         local armRelative = getArmRelativeCF() * ladderHandYaw * getHandCenterOffsetCF()
         return getBackSwordCF(giantTorsoCF)
