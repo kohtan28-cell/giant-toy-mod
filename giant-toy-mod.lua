@@ -11555,7 +11555,7 @@ end)
     end
 
     local function getHandSwordCF(armCF)
-        -- The limb frame has +X toward the shoulder, so the hand end is at -X.
+        -- Use the opposite limb end: this is the giant's right hand, not the shoulder.
         local handRelative = getArmRelativeCF()
         if Sword.ToyName == "LadderLightBrown" then
             -- The ladder chain runs along local Y. Rotate it out from the hand
@@ -11563,7 +11563,7 @@ end)
             handRelative = CFrame.Angles(math.rad(90), 0, 0)
         end
         return armCF
-            * CFrame.new(-LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
+            * CFrame.new(LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
             * handRelative
             * getHandCenterOffsetCF()
     end
@@ -11578,7 +11578,7 @@ end)
         armRelative = armRelative * getHandCenterOffsetCF()
         return getBackSwordCF(giantTorsoCF)
             * armRelative:Inverse()
-            * CFrame.new(LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
+            * CFrame.new(-LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
     end
 
     local function ease(t)
