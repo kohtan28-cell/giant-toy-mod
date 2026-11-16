@@ -3009,8 +3009,9 @@ function autoSpawnSwordToys()
         0.0942616984
     )
     -- The spawn remote uses this rotation for the model orientation.
-    -- Flip Y by 180 degrees so the ladder faces away from the player.
-    local spawnRotation = Vector3.new(0, 95.91699981689453, 0)
+    -- Flip Y away from the player and rotate Z by 90 degrees so the ladder
+    -- lies horizontally like a sword instead of standing upright.
+    local spawnRotation = Vector3.new(0, 95.91699981689453, 90)
     local spawnedSword = 0
     for index = current + 1, required do
         local ok = pcall(function()
