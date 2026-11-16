@@ -2906,19 +2906,18 @@ function autoSpawnRequiredToys()
         end
     end
 
-    -- Two giant bodies, two heads, two optional Korblox legs, orbit parts,
-    -- and two five-board swords.
+    -- Spawn only the parts used by Be Giant. Normal uses one body;
+    -- Double uses two bodies. Orbit and sword Toys are intentionally excluded.
+    local assemblyCount = giantMode == "Double" and 2 or 1
     local required = {
-        { Name = TOY_NAME, Count = 44 },
-        { Name = HEAD_TOY_NAME, Count = 2 },
-        { Name = KORBLOX_LEG_TOY_NAME, Count = 2 },
-        { Name = FIREWORK_TOY_NAME, Count = 1 },
-        { Name = "SpotlightBlue", Count = 1 },
-        { Name = "SpotlightGreen", Count = 1 },
-        { Name = "SpotlightRed", Count = 1 },
-        { Name = "SpotlightWhite", Count = 1 },
-        { Name = Window._FaptaSword.ToyName, Count = Window._FaptaSword.PartCount * 2 },
+        { Name = TOY_NAME, Count = assemblyCount * 22 },
     }
+    if not headlessEnabled then
+        table.insert(required, { Name = HEAD_TOY_NAME, Count = assemblyCount })
+    end
+    if korbloxLegEnabled then
+        table.insert(required, { Name = KORBLOX_LEG_TOY_NAME, Count = assemblyCount })
+    end
 
     local spawned = 0
     local failed = 0
