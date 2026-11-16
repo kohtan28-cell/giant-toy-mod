@@ -11746,7 +11746,7 @@ end)
             Window:Notify(
                 "SWORD ERROR",
                 string.format(
-                    "Sword needs PalletLightBrown x%d (SoundPart 11.5 x 1.5 x 11.5), found %d",
+                    "Sword needs LadderLightBrown x%d, found %d",
                     neededParts,
                     #candidates
                 ),
@@ -11755,6 +11755,7 @@ end)
             return false
         end
         local centerSlot = (Sword.PartCount + 1) / 2
+        local ladderSword = Sword.ToyName == "LadderLightBrown"
         for swordIndex = 1, swordCount do
             local set = {}
             for slot = 1, Sword.PartCount do
@@ -11763,13 +11764,21 @@ end)
                 local bodyGyro, bodyPosition = attachBodyMovers(candidate.Part)
                 bodyPosition.Position = candidate.Part.Position
                 bodyGyro.CFrame = candidate.Part.CFrame
+                local ladderLength = math.max(
+                    candidate.Part.Size.X,
+                    candidate.Part.Size.Y,
+                    candidate.Part.Size.Z
+                )
+                local localCF = ladderSword
+                    and CFrame.new(0, (slot - centerSlot) * ladderLength, 0)
+                    or CFrame.new((slot - centerSlot) * Sword.PartSize.X, 0, 0)
                 table.insert(set, {
                     Model = candidate.Model,
                     Part = candidate.Part,
                     BG = bodyGyro,
                     BP = bodyPosition,
-                    -- Boards sit side by side along the sword's local X axis with no gap.
-                    LocalCF = CFrame.new((slot - centerSlot) * Sword.PartSize.X, 0, 0),
+                    -- Ladders connect tip-to-tip along their long axis; boards use X.
+                    LocalCF = localCF,
                     RotationOffset = CFrame.new(),
                     OriginalModelPivot = candidate.Model:GetPivot(),
                     PartStates = partStates,
@@ -11781,13 +11790,13 @@ end)
         if swordCount == 2 then
             Window:Notify(
                 "SWORD BUILT",
-                "10 PalletLightBrown boards joined into two long blades; they follow both giants while Be Giant is ON",
+                "10 LadderLightBrown ladders joined tip-to-tip into two blades; they follow both giants while Be Giant is ON",
                 6
             )
         else
             Window:Notify(
                 "SWORD BUILT",
-                "5 PalletLightBrown boards joined into one long blade; they follow the giant while Be Giant is ON",
+                "5 LadderLightBrown ladders joined tip-to-tip into one blade; they follow the giant while Be Giant is ON",
                 6
             )
         end
