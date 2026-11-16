@@ -617,11 +617,11 @@ Window._FaptaSword = {
     SwingArc = { Up = 12, Forward = 6 },
     Defaults = {
         Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 90, 45) },
-        Arm = { Position = Vector3.new(-3, -7, 0), Angle = Vector3.new(0, -90, 90) },
+        Arm = { Position = Vector3.new(-5, -7, 0), Angle = Vector3.new(0, -90, 90) },
     },
     Profiles = {
         Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 90, 45) },
-        Arm = { Position = Vector3.new(-3, -7, 0), Angle = Vector3.new(0, -90, 90) },
+        Arm = { Position = Vector3.new(-5, -7, 0), Angle = Vector3.new(0, -90, 90) },
     },
 }
 -- Runtime state for giant parts, orbiting props, auto-save, and movement
