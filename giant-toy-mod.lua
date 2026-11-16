@@ -617,11 +617,11 @@ Window._FaptaSword = {
     SwingArc = { Up = 12, Forward = 6 },
     Defaults = {
         Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 90, 45) },
-        Arm = { Position = Vector3.new(0, -10, 0), Angle = Vector3.new(0, -90, 90) },
+        Arm = { Position = Vector3.zero, Angle = Vector3.new(0, -90, 90) },
     },
     Profiles = {
         Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 90, 45) },
-        Arm = { Position = Vector3.new(0, -10, 0), Angle = Vector3.new(0, -90, 90) },
+        Arm = { Position = Vector3.zero, Angle = Vector3.new(0, -90, 90) },
     },
 }
 -- Runtime state for giant parts, orbiting props, auto-save, and movement
@@ -2986,11 +2986,20 @@ function autoSpawnSwordToys()
     local required = Window._FaptaSword.PartCount
         * (giantMode == "Double" and 2 or 1)
     local current = 0
+    local existing = {}
     for _, child in ipairs(toyFolder:GetChildren()) do
         if child.Name == Window._FaptaSword.ToyName then
             current = current + 1
+            table.insert(existing, child)
         end
     end
+    -- Never keep more than the required 3-per-sword amount.
+    for index = required + 1, #existing do
+        pcall(function()
+            existing[index]:Destroy()
+        end)
+    end
+    current = math.min(current, required)
 
     local character = LP.Character
     local root = character and character:FindFirstChild("HumanoidRootPart")
@@ -11563,7 +11572,7 @@ end)
             handRelative = CFrame.Angles(math.rad(90), 0, 0)
         end
         return armCF
-            * CFrame.new(LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
+            * CFrame.new(-LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
             * handRelative
             * getHandCenterOffsetCF()
     end
@@ -11578,7 +11587,7 @@ end)
         armRelative = armRelative * getHandCenterOffsetCF()
         return getBackSwordCF(giantTorsoCF)
             * armRelative:Inverse()
-            * CFrame.new(-LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
+            * CFrame.new(LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
     end
 
     local function ease(t)
