@@ -11511,19 +11511,37 @@ end)
         local profile = Sword.Profiles.Back
         local backRelativeCF = CFrame.new(profile.Position) * angleRotation(profile.Angle)
         local halfLength = Sword.PartSize.X * Sword.PartCount / 2
-        local plusEndPosition = backRelativeCF * Vector3.new(halfLength, 0, 0)
-        local minusEndPosition = backRelativeCF * Vector3.new(-halfLength, 0, 0)
+        local localAxis = Vector3.new(halfLength, 0, 0)
+        if Sword.ToyName == "LadderLightBrown" and Sword.Sets[1] and Sword.Sets[1][1] then
+            local partSize = Sword.Sets[1][1].Part.Size
+            halfLength = math.max(partSize.X, partSize.Y, partSize.Z) * Sword.PartCount / 2
+            localAxis = Vector3.new(0, halfLength, 0)
+        end
+        local plusEndPosition = backRelativeCF * localAxis
+        local minusEndPosition = backRelativeCF * -localAxis
         local plusEndDistance = (plusEndPosition - GIANT_HEAD_OFFSET).Magnitude
         local minusEndDistance = (minusEndPosition - GIANT_HEAD_OFFSET).Magnitude
         if plusEndDistance <= minusEndDistance then
             return CFrame.new()
         end
-        return CFrame.Angles(0, 0, math.rad(180))
+        return Sword.ToyName == "LadderLightBrown"
+            and CFrame.Angles(math.rad(180), 0, 0)
+            or CFrame.Angles(0, 0, math.rad(180))
     end
 
     local function getArmRelativeCF()
         local profile = Sword.Profiles.Arm
         return CFrame.new(profile.Position) * angleRotation(profile.Angle) * getGripFlipCF()
+    end
+
+    local function getHandCenterOffsetCF()
+        if Sword.ToyName ~= "LadderLightBrown" or not Sword.Sets[1] or not Sword.Sets[1][1] then
+            return CFrame.new()
+        end
+        local partSize = Sword.Sets[1][1].Part.Size
+        local halfLength = math.max(partSize.X, partSize.Y, partSize.Z) * Sword.PartCount / 2
+        -- The hand is placed at the positive end of the connected ladder chain.
+        return CFrame.new(0, -halfLength, 0)
     end
 
     local function getBackSwordCF(giantTorsoCF)
@@ -11533,14 +11551,18 @@ end)
 
     local function getHandSwordCF(armCF)
         -- The limb frame has +X toward the shoulder, so the hand end is at -X.
-        return armCF * CFrame.new(-LIMB_ASSEMBLY_SIZE.X / 2, 0, 0) * getArmRelativeCF()
+        return armCF
+            * CFrame.new(-LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
+            * getArmRelativeCF()
+            * getHandCenterOffsetCF()
     end
 
     -- Giant right-arm frame whose hand holds the back-mounted sword exactly the way the Arm Tip
     -- profile holds it (so the sword does not move when the hand takes over).
     local function getGrabArmCF(giantTorsoCF)
+        local armRelative = getArmRelativeCF() * getHandCenterOffsetCF()
         return getBackSwordCF(giantTorsoCF)
-            * getArmRelativeCF():Inverse()
+            * armRelative:Inverse()
             * CFrame.new(LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
     end
 
