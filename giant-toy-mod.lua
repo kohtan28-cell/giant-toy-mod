@@ -1069,8 +1069,9 @@ end)
 ReanimateTab:AddButton("Auto Spawn Toys", function()
     task.spawn(function()
         local ok, err = pcall(function()
-            autoSpawnRequiredToys()
-            Window._FaptaToys.Build()
+            if autoSpawnRequiredToys() then
+                Window._FaptaToys.Build()
+            end
         end)
         if not ok then
             Window:Notify("AUTO SPAWN ERROR", tostring(err), 7)
@@ -2934,36 +2935,49 @@ function autoSpawnRequiredToys()
         end
 
         for index = current + 1, entry.Count do
-            local ok = pcall(function()
-                local rotation = Vector3.zero
-                local orientPart = Workspace:FindFirstChild("RotateOrientPart")
-                if orientPart then
-                    rotation = orientPart.Rotation
-                end
-                spawnRemote:InvokeServer(
-                    entry.Name,
-                    CFrame.new(
-                        spawnCenter.Position
-                            + Vector3.new((spawned % 8) * 4, 15, math.floor(spawned / 8) * 4 + 20)
-                    ),
-                    rotation
-                )
-            end)
             local appeared = false
-            for _ = 1, 12 do
-                task.wait(0.12)
-                local count = 0
-                for _, child in ipairs(toyFolder:GetChildren()) do
-                    if child.Name == entry.Name then
-                        count = count + 1
+            for _ = 1, 4 do
+                if canSpawnToy then
+                    local deadline = os.clock() + 10
+                    while canSpawnToy.Value == false and os.clock() < deadline do
+                        task.wait(0.25)
                     end
                 end
-                if count >= index then
-                    appeared = true
+                local ok = pcall(function()
+                    local rotation = Vector3.zero
+                    local orientPart = Workspace:FindFirstChild("RotateOrientPart")
+                    if orientPart then
+                        rotation = orientPart.Rotation
+                    end
+                    spawnRemote:InvokeServer(
+                        entry.Name,
+                        CFrame.new(
+                            spawnCenter.Position
+                                + Vector3.new((spawned % 8) * 4, 15, math.floor(spawned / 8) * 4 + 20)
+                        ),
+                        rotation
+                    )
+                end)
+                if ok then
+                    for _ = 1, 15 do
+                        task.wait(0.2)
+                        local count = 0
+                        for _, child in ipairs(toyFolder:GetChildren()) do
+                            if child.Name == entry.Name then
+                                count = count + 1
+                            end
+                        end
+                        if count >= index then
+                            appeared = true
+                            break
+                        end
+                    end
+                end
+                if appeared then
                     break
                 end
             end
-            if ok and appeared then
+            if appeared then
                 spawned = spawned + 1
             else
                 failed = failed + 1
@@ -11869,8 +11883,9 @@ task.delay(2, function()
     if not LP or not LP.Parent then
         return
     end
-    autoSpawnRequiredToys()
-    Window._FaptaToys.Build()
+    if autoSpawnRequiredToys() then
+        Window._FaptaToys.Build()
+    end
 end)
 
 -- UI width: the window is made 30 px wider with Window:SetSize (HertaIX).
