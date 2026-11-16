@@ -603,7 +603,7 @@ Window._FaptaWings = {
 Window._FaptaSword = {
     ToyName = "LadderLightBrown",
     PartSize = Vector3.new(11.5, 1.5, 11.5),
-    PartCount = 5,
+    PartCount = 4,
     WaitSlotBase = 129,
     Sets = {},
     ArmMode = false,
@@ -617,11 +617,11 @@ Window._FaptaSword = {
     SwingArc = { Up = 12, Forward = 6 },
     Defaults = {
         Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 90, 45) },
-        Arm = { Position = Vector3.new(-3, 0, 0), Angle = Vector3.new(0, -90, 90) },
+        Arm = { Position = Vector3.new(-3, -7, 0), Angle = Vector3.new(0, -90, 90) },
     },
     Profiles = {
         Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 90, 45) },
-        Arm = { Position = Vector3.new(-3, 0, 0), Angle = Vector3.new(0, -90, 90) },
+        Arm = { Position = Vector3.new(-3, -7, 0), Angle = Vector3.new(0, -90, 90) },
     },
 }
 -- Runtime state for giant parts, orbiting props, auto-save, and movement
@@ -1468,7 +1468,7 @@ end)
     SwordTab:AddSection("-- sword build --")
     SwordTab:AddParagraph(
         "Sword Required Parts",
-        "LadderLightBrown x5 per sword; Double mode needs x10 for two swords"
+        "LadderLightBrown x4 per sword; Double mode needs x8 for two swords"
     )
     SwordTab:AddButton("build sword", function()
         Sword.Build()
@@ -11833,7 +11833,7 @@ end)
         else
             Window:Notify(
                 "SWORD BUILT",
-                "5 LadderLightBrown ladders joined tip-to-tip into one blade; they follow the giant while Be Giant is ON",
+                "4 LadderLightBrown ladders joined tip-to-tip into one blade; they follow the giant while Be Giant is ON",
                 6
             )
         end
