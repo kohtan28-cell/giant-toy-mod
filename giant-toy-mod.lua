@@ -701,7 +701,7 @@ local Util = {} -- shared helpers (defined at the start of the logic section)
 -- ============================================================================
 local rotationOnly, cleanupGiant, findKorbloxLegCandidates, makeKorbloxLegData, assignKorbloxLegLayout, moveToWaitPosition, moveHeadToWaitPosition, moveRightLegGroupsToWaitPosition
 local resolveSelectedFolder, getSelectedFolderError, getBackOrbitTargetCF, restoreFireworkSparklers, restoreSpotlights, normalizeSpotlightSelection, applyFireworkSparklers, applySpotlights
-local updateFireworkSpin, updateSpotlightSpin, buildGiant, tracePlayer, refreshGiantAssemblyPlacement, runAutoSave, setTPWalkEnabled, AutoSNOWship, autoSpawnRequiredToys
+local updateFireworkSpin, updateSpotlightSpin, buildGiant, tracePlayer, refreshGiantAssemblyPlacement, runAutoSave, setTPWalkEnabled, AutoSNOWship, autoSpawnRequiredToys, autoSpawnSwordToys
 local GetAutoSlotEntries, AreAllSlotLightsNeon, SaveAutoPosition, RestoreAutoPosition, TrackRemainingTime, AutoPlotRefreshValue
 
 -- ============================================================================
@@ -1066,7 +1066,7 @@ end)
 ReanimateTab:AddButton("build Toys", function()
     Window._FaptaToys.Build()
 end)
-ReanimateTab:AddButton("Auto Spawn Toys", function()
+ReanimateTab:AddButton("Auto Spawn Giant Toys", function()
     task.spawn(function()
         local ok, err = pcall(function()
             if autoSpawnRequiredToys() then
@@ -1075,6 +1075,16 @@ ReanimateTab:AddButton("Auto Spawn Toys", function()
         end)
         if not ok then
             Window:Notify("AUTO SPAWN ERROR", tostring(err), 7)
+        end
+    end)
+end)
+ReanimateTab:AddButton("Auto Spawn Sword Toys", function()
+    task.spawn(function()
+        local ok, err = pcall(function()
+            autoSpawnSwordToys()
+        end)
+        if not ok then
+            Window:Notify("SWORD SPAWN ERROR", tostring(err), 7)
         end
     end)
 end)
@@ -2899,7 +2909,6 @@ function autoSpawnRequiredToys()
     local required = {
         { Name = TOY_NAME, Count = assemblyCount * 22 },
         { Name = HEAD_TOY_NAME, Count = assemblyCount },
-        { Name = Window._FaptaSword.ToyName, Count = Window._FaptaSword.PartCount * assemblyCount },
     }
     if korbloxLegEnabled then
         table.insert(required, { Name = KORBLOX_LEG_TOY_NAME, Count = assemblyCount })
@@ -2963,6 +2972,57 @@ function autoSpawnRequiredToys()
         7
     )
     return failed == 0
+end
+
+function autoSpawnSwordToys()
+    local menuToys = ReplicatedStorage:FindFirstChild("MenuToys")
+    local spawnRemote = menuToys and menuToys:FindFirstChild("SpawnToyRemoteFunction")
+    local toyFolder = Workspace:FindFirstChild(LP.Name .. "SpawnedInToys")
+    if not spawnRemote or not toyFolder then
+        Window:Notify("SWORD SPAWN ERROR", "Toy spawn objects were not found", 6)
+        return false
+    end
+
+    local required = Window._FaptaSword.PartCount
+        * (giantMode == "Double" and 2 or 1)
+    local current = 0
+    for _, child in ipairs(toyFolder:GetChildren()) do
+        if child.Name == Window._FaptaSword.ToyName then
+            current = current + 1
+        end
+    end
+
+    local character = LP.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    local center = root and root.Position or Vector3.new(0, 15, 0)
+    local spawnedSword = 0
+    for index = current + 1, required do
+        local ok = pcall(function()
+            spawnRemote:InvokeServer(
+                Window._FaptaSword.ToyName,
+                CFrame.new(center + Vector3.new((index % 8) * 4, 15, math.floor(index / 8) * 4 + 20)),
+                Vector3.zero
+            )
+        end)
+        if ok then
+            spawnedSword = spawnedSword + 1
+        end
+    end
+    task.wait(1)
+
+    local finalCount = 0
+    for _, child in ipairs(toyFolder:GetChildren()) do
+        if child.Name == Window._FaptaSword.ToyName then
+            finalCount = finalCount + 1
+        end
+    end
+    local missing = math.max(0, required - finalCount)
+    Window:Notify(
+        "SWORD AUTO SPAWN",
+        string.format("sent %d | total %d/%d | missing %d", spawnedSword, finalCount, required, missing),
+        7
+    )
+    return missing == 0
 end
 
 function Window._FaptaToys.Build()
