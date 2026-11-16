@@ -2886,9 +2886,23 @@ local function autoSpawnRequiredToys()
     end
 
     local toyFolder = Workspace:FindFirstChild(LP.Name .. "SpawnedInToys")
+        or Workspace:WaitForChild(LP.Name .. "SpawnedInToys", 10)
     if not toyFolder then
         Window:Notify("LOAD ERROR", "SpawnedInToys was not found", 6)
         return false
+    end
+
+    local canSpawnToy = LP:FindFirstChild("CanSpawnToy")
+    if canSpawnToy and canSpawnToy.Value == false then
+        Window:Notify("AUTO SPAWN", "Waiting for Toy spawn permission...", 5)
+        local deadline = os.clock() + 15
+        while canSpawnToy.Value == false and os.clock() < deadline do
+            task.wait(0.25)
+        end
+        if canSpawnToy.Value == false then
+            Window:Notify("AUTO SPAWN ERROR", "Toy spawn permission was not granted", 6)
+            return false
+        end
     end
 
     -- Two giant bodies, two heads, two optional Korblox legs, orbit parts,
@@ -2921,10 +2935,18 @@ local function autoSpawnRequiredToys()
 
         for index = current + 1, entry.Count do
             local ok = pcall(function()
+                local rotation = Vector3.zero
+                local orientPart = Workspace:FindFirstChild("RotateOrientPart")
+                if orientPart then
+                    rotation = orientPart.Rotation
+                end
                 spawnRemote:InvokeServer(
                     entry.Name,
-                    spawnCenter + CFrame.new((spawned % 8) * 4, 0, math.floor(spawned / 8) * 4),
-                    Vector3.zero
+                    CFrame.new(
+                        spawnCenter.Position
+                            + Vector3.new((spawned % 8) * 4, 15, math.floor(spawned / 8) * 4 + 20)
+                    ),
+                    rotation
                 )
             end)
             local appeared = false
