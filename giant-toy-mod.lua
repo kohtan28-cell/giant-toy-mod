@@ -607,6 +607,8 @@ Window._FaptaSword = {
     WaitSlotBase = 129,
     Sets = {},
     ArmMode = false,
+    SwingEnabled = false,
+    SwingStart = 0,
     Anims = {},
     ReachTime = 0.28,
     HoldTime = 0.05,
@@ -1492,6 +1494,11 @@ end)
     ArmToggle = SwordTab:AddToggle("Sword on Arm Tip (OFF: Back)", false, function(value)
         setArmMode(value)
     end)
+    SwordTab:AddToggle("Sword Swing", false, function(value)
+        Sword.SwingEnabled = value
+        Sword.SwingStart = os.clock()
+        Window:Notify("SWORD SWING", value and "sword swing enabled" or "sword swing disabled", 3)
+    end)
 
     ModeSectionLabel = SwordTab:AddSection("-- Sword Offset (Back) --")
     for _, def in ipairs(CONTROL_DEFS) do
@@ -2017,9 +2024,13 @@ function Util.freezeParts(model)
                 Part = descendant,
                 Anchored = descendant.Anchored,
                 CanCollide = descendant.CanCollide,
+                CanTouch = descendant.CanTouch,
+                CanQuery = descendant.CanQuery,
             })
             descendant.Anchored = false
             descendant.CanCollide = false
+            descendant.CanTouch = false
+            descendant.CanQuery = false
         end
     end
     return partStates
@@ -2530,6 +2541,12 @@ local function restoreSpinGroup(group)
             if partState.Part and partState.Part.Parent then
                 partState.Part.Anchored = partState.Anchored
                 partState.Part.CanCollide = partState.CanCollide
+                if partState.CanTouch ~= nil then
+                    partState.Part.CanTouch = partState.CanTouch
+                end
+                if partState.CanQuery ~= nil then
+                    partState.Part.CanQuery = partState.CanQuery
+                end
             end
         end
     end
@@ -11571,6 +11588,10 @@ end)
             -- so it behaves like a sword instead of rising over the shoulder.
             handRelative = CFrame.Angles(math.rad(90), 0, 0)
         end
+        if Sword.SwingEnabled then
+            local swing = math.sin((os.clock() - Sword.SwingStart) * 8) * 55
+            handRelative = handRelative * CFrame.Angles(0, math.rad(swing), 0)
+        end
         return armCF
             * CFrame.new(-LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
             * handRelative
@@ -11583,6 +11604,10 @@ end)
         local armRelative = getArmRelativeCF()
         if Sword.ToyName == "LadderLightBrown" then
             armRelative = CFrame.Angles(math.rad(90), 0, 0)
+        end
+        if Sword.SwingEnabled then
+            local swing = math.sin((os.clock() - Sword.SwingStart) * 8) * 55
+            armRelative = armRelative * CFrame.Angles(0, math.rad(swing), 0)
         end
         armRelative = armRelative * getHandCenterOffsetCF()
         return getBackSwordCF(giantTorsoCF)
@@ -11704,6 +11729,17 @@ end)
         local set = Sword.Sets[index]
         if not set then
             return
+        end
+        for _, data in ipairs(set) do
+            if data.Model and data.Model.Parent then
+                for _, descendant in ipairs(data.Model:GetDescendants()) do
+                    if descendant:IsA("BasePart") then
+                        descendant.CanCollide = false
+                        descendant.CanTouch = false
+                        descendant.CanQuery = false
+                    end
+                end
+            end
         end
         local inHand
         local anim = Sword.Anims[index]
