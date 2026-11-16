@@ -616,11 +616,11 @@ Window._FaptaSword = {
     ReachArc = { Up = 8, Forward = -3 },
     SwingArc = { Up = 12, Forward = 6 },
     Defaults = {
-        Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 0, 90) },
+        Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 180, 90) },
         Arm = { Position = Vector3.new(0, 0, -25), Angle = Vector3.new(0, -90, 0) },
     },
     Profiles = {
-        Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 0, 90) },
+        Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 180, 90) },
         Arm = { Position = Vector3.new(0, 0, -25), Angle = Vector3.new(0, -90, 0) },
     },
 }
