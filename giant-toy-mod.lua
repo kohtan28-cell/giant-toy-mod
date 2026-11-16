@@ -617,11 +617,11 @@ Window._FaptaSword = {
     SwingArc = { Up = 12, Forward = 6 },
     Defaults = {
         Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 90, 45) },
-        Arm = { Position = Vector3.new(0, 0, -25), Angle = Vector3.new(0, -90, 0) },
+        Arm = { Position = Vector3.new(0, 0, 25), Angle = Vector3.new(0, -90, 0) },
     },
     Profiles = {
         Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 90, 45) },
-        Arm = { Position = Vector3.new(0, 0, -25), Angle = Vector3.new(0, -90, 0) },
+        Arm = { Position = Vector3.new(0, 0, 25), Angle = Vector3.new(0, -90, 0) },
     },
 }
 -- Runtime state for giant parts, orbiting props, auto-save, and movement
@@ -11963,16 +11963,6 @@ task.delay(1, function()
     Window._FaptaLanguageStartup = false
 end)
 Window:Notify("Console", "0 s error exist", 5)
-
--- Spawn every required Toy automatically after the game objects and UI are ready.
-task.delay(2, function()
-    if not LP or not LP.Parent then
-        return
-    end
-    if autoSpawnRequiredToys() then
-        Window._FaptaToys.Build()
-    end
-end)
 
 -- UI width: the window is made 30 px wider with Window:SetSize (HertaIX).
 -- Change Window._FaptaUiExtraWidth to adjust the amount (pixels).
