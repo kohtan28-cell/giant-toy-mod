@@ -617,11 +617,11 @@ Window._FaptaSword = {
     SwingArc = { Up = 12, Forward = 6 },
     Defaults = {
         Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 90, 45) },
-        Arm = { Position = Vector3.zero, Angle = Vector3.new(0, -90, 90) },
+        Arm = { Position = Vector3.new(-3, 0, 0), Angle = Vector3.new(0, -90, 90) },
     },
     Profiles = {
         Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 90, 45) },
-        Arm = { Position = Vector3.zero, Angle = Vector3.new(0, -90, 90) },
+        Arm = { Position = Vector3.new(-3, 0, 0), Angle = Vector3.new(0, -90, 90) },
     },
 }
 -- Runtime state for giant parts, orbiting props, auto-save, and movement
@@ -11560,7 +11560,7 @@ end)
         if Sword.ToyName == "LadderLightBrown" then
             -- The ladder chain runs along local Y. Rotate it out from the hand
             -- so it behaves like a sword instead of rising over the shoulder.
-            handRelative = CFrame.Angles(math.rad(110), 0, 0)
+            handRelative = CFrame.Angles(math.rad(90), 0, 0)
         end
         return armCF
             * CFrame.new(LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
@@ -11573,7 +11573,7 @@ end)
     local function getGrabArmCF(giantTorsoCF)
         local armRelative = getArmRelativeCF()
         if Sword.ToyName == "LadderLightBrown" then
-            armRelative = CFrame.Angles(math.rad(110), 0, 0)
+            armRelative = CFrame.Angles(math.rad(90), 0, 0)
         end
         armRelative = armRelative * getHandCenterOffsetCF()
         return getBackSwordCF(giantTorsoCF)
