@@ -617,11 +617,11 @@ Window._FaptaSword = {
     SwingArc = { Up = 12, Forward = 6 },
     Defaults = {
         Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 90, 45) },
-        Arm = { Position = Vector3.new(0, 0, -25), Angle = Vector3.new(0, 0, 90) },
+        Arm = { Position = Vector3.new(0, 0, -25), Angle = Vector3.new(0, -90, 90) },
     },
     Profiles = {
         Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 90, 45) },
-        Arm = { Position = Vector3.new(0, 0, -25), Angle = Vector3.new(0, 0, 90) },
+        Arm = { Position = Vector3.new(0, 0, -25), Angle = Vector3.new(0, -90, 90) },
     },
 }
 -- Runtime state for giant parts, orbiting props, auto-save, and movement
@@ -11552,16 +11552,23 @@ end)
 
     local function getHandSwordCF(armCF)
         -- The limb frame has +X toward the shoulder, so the hand end is at -X.
+        local ladderHandYaw = Sword.ToyName == "LadderLightBrown"
+            and CFrame.Angles(0, math.rad(90), 0)
+            or CFrame.new()
         return armCF
             * CFrame.new(-LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
             * getArmRelativeCF()
+            * ladderHandYaw
             * getHandCenterOffsetCF()
     end
 
     -- Giant right-arm frame whose hand holds the back-mounted sword exactly the way the Arm Tip
     -- profile holds it (so the sword does not move when the hand takes over).
     local function getGrabArmCF(giantTorsoCF)
-        local armRelative = getArmRelativeCF() * getHandCenterOffsetCF()
+        local ladderHandYaw = Sword.ToyName == "LadderLightBrown"
+            and CFrame.Angles(0, math.rad(90), 0)
+            or CFrame.new()
+        local armRelative = getArmRelativeCF() * ladderHandYaw * getHandCenterOffsetCF()
         return getBackSwordCF(giantTorsoCF)
             * armRelative:Inverse()
             * CFrame.new(LIMB_ASSEMBLY_SIZE.X / 2, 0, 0)
