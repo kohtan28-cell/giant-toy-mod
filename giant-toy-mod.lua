@@ -617,11 +617,11 @@ Window._FaptaSword = {
     SwingArc = { Up = 12, Forward = 6 },
     Defaults = {
         Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 90, 45) },
-        Arm = { Position = Vector3.new(0, 0, 25), Angle = Vector3.new(0, -90, 0) },
+        Arm = { Position = Vector3.new(0, 0, -25), Angle = Vector3.new(0, -90, 0) },
     },
     Profiles = {
         Back = { Position = Vector3.new(0, 0, 5), Angle = Vector3.new(90, 90, 45) },
-        Arm = { Position = Vector3.new(0, 0, 25), Angle = Vector3.new(0, -90, 0) },
+        Arm = { Position = Vector3.new(0, 0, -25), Angle = Vector3.new(0, -90, 0) },
     },
 }
 -- Runtime state for giant parts, orbiting props, auto-save, and movement
@@ -11542,7 +11542,7 @@ end)
         local halfLength = math.max(partSize.X, partSize.Y, partSize.Z) * Sword.PartCount / 2
         -- Grip slightly above/inward from the very end instead of exactly at the tip.
         local gripInset = 3
-        return CFrame.new(0, -halfLength + gripInset, 0)
+        return CFrame.new(0, halfLength - gripInset, 0)
     end
 
     local function getBackSwordCF(giantTorsoCF)
