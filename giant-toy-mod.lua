@@ -2898,7 +2898,7 @@ function autoSpawnRequiredToys()
         Window:Notify("AUTO SPAWN", "Waiting for Toy spawn permission...", 5)
         local deadline = os.clock() + 15
         while canSpawnToy.Value == false and os.clock() < deadline do
-            task.wait(0.25)
+            task.wait(0.1)
         end
         if canSpawnToy.Value == false then
             Window:Notify("AUTO SPAWN ERROR", "Toy spawn permission was not granted", 6)
@@ -2937,7 +2937,7 @@ function autoSpawnRequiredToys()
                 if canSpawnToy then
                     local deadline = os.clock() + 10
                     while canSpawnToy.Value == false and os.clock() < deadline do
-                        task.wait(0.25)
+                        task.wait(0.1)
                     end
                 end
                 local ok = pcall(function()
@@ -2956,8 +2956,8 @@ function autoSpawnRequiredToys()
                     )
                 end)
                 if ok then
-                    for _ = 1, 15 do
-                        task.wait(0.2)
+                    for _ = 1, 12 do
+                        task.wait(0.1)
                         local count = 0
                         for _, child in ipairs(toyFolder:GetChildren()) do
                             if child.Name == entry.Name then
