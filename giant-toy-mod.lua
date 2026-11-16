@@ -701,7 +701,7 @@ local Util = {} -- shared helpers (defined at the start of the logic section)
 -- ============================================================================
 local rotationOnly, cleanupGiant, findKorbloxLegCandidates, makeKorbloxLegData, assignKorbloxLegLayout, moveToWaitPosition, moveHeadToWaitPosition, moveRightLegGroupsToWaitPosition
 local resolveSelectedFolder, getSelectedFolderError, getBackOrbitTargetCF, restoreFireworkSparklers, restoreSpotlights, normalizeSpotlightSelection, applyFireworkSparklers, applySpotlights
-local updateFireworkSpin, updateSpotlightSpin, buildGiant, tracePlayer, refreshGiantAssemblyPlacement, runAutoSave, setTPWalkEnabled, AutoSNOWship
+local updateFireworkSpin, updateSpotlightSpin, buildGiant, tracePlayer, refreshGiantAssemblyPlacement, runAutoSave, setTPWalkEnabled, AutoSNOWship, autoSpawnRequiredToys
 local GetAutoSlotEntries, AreAllSlotLightsNeon, SaveAutoPosition, RestoreAutoPosition, TrackRemainingTime, AutoPlotRefreshValue
 
 -- ============================================================================
@@ -2877,7 +2877,7 @@ end
 
 -- Automatically prepare the toys required by this giant mod.
 -- Only missing toys are requested, so running the script again does not duplicate them.
-local function autoSpawnRequiredToys()
+function autoSpawnRequiredToys()
     local menuToys = ReplicatedStorage:FindFirstChild("MenuToys")
     local spawnRemote = menuToys and menuToys:FindFirstChild("SpawnToyRemoteFunction")
     if not spawnRemote then
