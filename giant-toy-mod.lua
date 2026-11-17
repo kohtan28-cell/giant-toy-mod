@@ -78,6 +78,7 @@ Window.Notify = function(_, title, text, duration)
     Library:Notify({ Title = tostring(title), Description = tostring(text), Time = duration or 4 })
 end
 Window._FaptaTranslateText = function(_, text) return text end
+Window._FaptaSetLanguage = function() end
 Window._ScreenGui = game:GetService("CoreGui")
 Window.GetSize = function() return Vector2.new(500, 500) end
 Window.SetSize = function() end
