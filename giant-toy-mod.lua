@@ -6,542 +6,83 @@
 
 ]]
 
--- Roblox services and HertaIX window setup
+-- Roblox services and Obsidian window setup
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local StarterGui = game:GetService("StarterGui")
 local SCRIPT_VERSION = "0.3.44"
-local HertaIX = loadstring(
-    game:HttpGet(
-        "https://raw.githubusercontent.com/midorimidoru1-collab/HertaIX/master/HertaIX.lua"
-    )
-)()
-local Window = HertaIX:CreateWindow("Fapta | v" .. SCRIPT_VERSION .. " BETA", "near_future")
-Window:SetTitleRainbow(true)
-Window:SetTitleFont("arcade")
-Window._InfoTab = Window:CreateTab("INFO")
-local ReanimateTab = Window:CreateTab("REANIMATE")
-Window._SwordTab = Window:CreateTab("SWORD")
-local SettingTab = Window:CreateTab("SETTING")
-Window._OthersTab = Window:CreateTab("OTHERS")
-local AutoTab = Window:CreateTab("PLOT")
-local DefenseTab = Window:CreateTab("DEFENSE")
-local StaffTab = Window:CreateTab("STAFF ROLL")
+local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
+local Library = loadstring(game:HttpGet(repo .. "Library.lua"))()
+local Options = Library.Options
+local Toggles = Library.Toggles
+Library.ForceCheckbox = false
+Library.ShowToggleFrameInKeybinds = true
+local Window = Library:CreateWindow({
+    Title = "Fapta Giant | v" .. SCRIPT_VERSION,
+    Footer = "Giant",
+    NotifySide = "Right",
+    ShowCustomCursor = false,
+})
+local GiantTab = Window:AddTab("Giant", "user")
+local GiantGroup = GiantTab:AddLeftGroupbox({ Name = "Giant Controls", IconName = "move-3d" })
 
--- Live localization keeps the original English text for every HertaIX text object.
--- Switching languages changes display text only; callbacks, selected values, and game logic stay unchanged.
-Window._FaptaLanguageState = {
-    Current = "English",
-    Applying = false,
-    OriginalText = setmetatable({}, { __mode = "k" }),
-    OriginalPlaceholder = setmetatable({}, { __mode = "k" }),
-    Connections = setmetatable({}, { __mode = "k" }),
-    PlaceholderConnections = setmetatable({}, { __mode = "k" }),
-}
-
-Window._FaptaExactTranslations = {
-    ["INFO"] = "情報",
-    ["REANIMATE"] = "巨人化",
-    ["SETTING"] = "設定",
-    ["OTHERS"] = "その他",
-    ["PLOT"] = "プロット",
-    ["DEFENSE"] = "防御",
-    ["STAFF ROLL"] = "スタッフロール",
-    ["-- Auto Get Coins --"] = "-- コイン自動取得 --",
-    ["Auto-Spin"] = "自動スピン",
-    ["-- Auto Time-Reset --"] = "-- 時間リセット --",
-    ["Preserve Time"] = "Plot時間を維持",
-    ["-- Auto Claim-Plot --"] = "-- Plot自動取得 --",
-    ["Plot"] = "プロット",
-    ["Claim Plot"] = "Plotを取得",
-    ["-- build --"] = "-- ビルド --",
-    ["Toy Type"] = "対象タイプ",
-    ["build giant"] = "巨人を構築",
-    ["cleanup"] = "クリーンアップ",
-    ["-- live summary --"] = "-- ライブサマリー --",
-    ["Live Parts / Body Summary"] = "パーツ・身体構成サマリー",
-    ["Scanning selected source..."] = "選択中の対象を確認しています...",
-    ["Refresh Summary"] = "サマリーを更新",
-    ["-- required parts --"] = "-- 必要パーツ --",
-    ["Normal Required Parts (1 Giant)"] = "Normal必要パーツ（巨人1体）",
-    ["Double Required Parts (2 Giants)"] = "Double必要パーツ（巨人2体）",
-    ["Shared Orbit Required Parts"] = "共通オービット必要パーツ",
-    [ [=[Normal (1 giant)
-Body: TableWoodTwoLegs x22
-  Left Arm x4 / Right Arm x4
-  Left Leg x4 / Right Leg x4
-  Torso x6
-Head: GlassBoxGray x1 when Headless is OFF
-Korblox: TetracubeI x1 when Korblox leg is ON
-  The four wooden right-leg boards remain reserved.]=] ] = [=[Normal（巨人1体）
-身体: TableWoodTwoLegs x22
-  左腕 x4 / 右腕 x4
-  左脚 x4 / 右脚 x4
-  胴体 x6
-頭部: HeadlessがOFFのときGlassBoxGray x1
-Korblox: Korblox脚がONのときTetracubeI x1
-  右脚用の木板4枚は予備として保持されます。]=],
-    [ [=[Double (2 giants)
-Body: TableWoodTwoLegs x44 (22 for each giant)
-  Left Arm x8 / Right Arm x8
-  Left Leg x8 / Right Leg x8
-  Torso x12
-Head: GlassBoxGray x2 when Headless is OFF
-Korblox: TetracubeI x2 when Korblox leg is ON
-  Eight wooden right-leg boards remain reserved.]=] ] = [=[Double（巨人2体）
-身体: TableWoodTwoLegs x44（各巨人22枚）
-  左腕 x8 / 右腕 x8
-  左脚 x8 / 右脚 x8
-  胴体 x12
-頭部: HeadlessがOFFのときGlassBoxGray x2
-Korblox: Korblox脚がONのときTetracubeI x2
-  右脚用の木板8枚は予備として保持されます。]=],
-    [ [=[Shared Orbit materials (not doubled in Double mode)
-FireworkSparkler: at least x1
-Spotlight: at least x1 of every selected color
-  SpotlightBlue / Green / Red / White]=] ] = [=[共通オービット素材（Doubleでも倍増しません）
-FireworkSparkler: 1個以上
-Spotlight: 選択した各色を1個以上
-  SpotlightBlue / Green / Red / White]=],
-    ["-- trace --"] = "-- トレース --",
-    ["Giant Mode"] = "巨人モード",
-    ["Be Giant"] = "巨人化",
-    ["-- super necessity --"] = "-- 必須機能 --",
-    ["BarrierBreak"] = "バリア破壊",
-    ["-- Giant Settings --"] = "-- 巨人設定 --",
-    ["Toggle 7x Giant Movement"] = "巨人移動距離7倍",
-    ["Toggle 7x Movement Speed"] = "移動速度7倍",
-    ["Double Giant Spacing"] = "2体の間隔",
-    ["Double Spacing"] = "2体の間隔",
-    ["-- Orbit_1(FireworkSparkler) --"] = "-- オービット1（FireworkSparkler） --",
-    ["Firework Orbit"] = "Fireworkオービット",
-    ["Spin Y Position"] = "回転Y位置",
-    ["Firework Radius"] = "Firework半径",
-    ["Spin Speed"] = "回転速度",
-    ["-- Orbit_2(Spotlight) --"] = "-- オービット2（Spotlight） --",
-    ["Spotlight Types"] = "Spotlight種類",
-    ["Spotlight Orbit"] = "Spotlightオービット",
-    ["Spotlight Radius"] = "Spotlight半径",
-    ["-- Modifiers --"] = "-- モディファイア --",
-    ["Toggle Headless"] = "Headless切替",
-    ["Toggle Korblox leg"] = "Korblox脚切替",
-    ["-- STAFF ROLL --"] = "-- スタッフロール --",
-    ["Library / Design: midori"] = "ライブラリ／デザイン: midori",
-    ["Toy-based giant body tracking rebuild"] = "Toyを使用した巨人ボディ追従の再構築",
-    ["PLOT Tab Reference"] = "PLOTタブ参照",
-    ["-- omake! --"] = "-- おまけ！ --",
-    ["thx 4 useing this script"] = "このスクリプトを使ってくれてありがとう",
-    ["Click"] = "実行",
-    ["Selected"] = "選択中",
-    ["NO"] = "いいえ",
-    ["ON"] = "ON",
-    ["OFF"] = "OFF",
-    ["BUILD ERROR"] = "ビルドエラー",
-    ["GIANT BUILT"] = "巨人構築完了",
-    ["PLOT AUTO-SELECTED"] = "PLOT自動選択",
-    ["PLOT OWNER ERROR"] = "PLOT所有者エラー",
-    ["FOLDER SELECTED"] = "フォルダ選択完了",
-    ["CLEANUP"] = "クリーンアップ",
-    ["GIANT MODE"] = "巨人モード",
-    ["FIREWORK ERROR"] = "FIREWORKエラー",
-    ["SPOTLIGHT ERROR"] = "SPOTLIGHTエラー",
-    ["KORBLOX LEG ERROR"] = "KORBLOX脚エラー",
-    ["LOAD ERROR"] = "読み込みエラー",
-    ["Console"] = "コンソール",
-    ["FIREWORK"] = "花火",
-    ["SPOTLIGHT"] = "スポットライト",
-    ["Success"] = "成功",
-    ["Error"] = "エラー",
-    ["error"] = "エラー",
-    ["Enabled"] = "有効",
-    ["Disabled"] = "無効",
-    ["Enabled Crazy hamburger"] = "有効（Crazy hamburger）",
-    ["IsHeld was not found."] = "IsHeldが見つかりません。",
-    ["Required fire parts were not found."] = "必要な炎関連パーツが見つかりません。",
-    ["Ragdolled was not found."] = "Ragdolledが見つかりません。",
-    ["Character was not ready."] = "キャラクターの準備ができていません。",
-    ["NinjaKunai could not be purchased."] = "NinjaKunaiを購入できませんでした。",
-    ["CharacterAndBeamMove was not found."] = "CharacterAndBeamMoveが見つかりません。",
-    ["Ten Defense features loaded."] = "10個の防御機能を読み込みました。",
-    ["GUCCI Anti Grab was cancelled."] = "旧Gucci Anti Grabをキャンセルしました。",
-    ["Humanoid or HumanoidRootPart was not found."] = "HumanoidまたはHumanoidRootPartが見つかりません。",
-    ["CreatureBlobman could not be spawned."] = "CreatureBlobmanを召喚できませんでした。",
-    ["GrabbableHitbox was not found."] = "GrabbableHitboxが見つかりません。",
-    ["Activation failed."] = "有効化に失敗しました。",
-    ["speed, gravity, and jump power enabled"] = "速度・重力・ジャンプ力の変更を有効にしました",
-    ["original speed, gravity, and jump restored"] = "速度・重力・ジャンプ力を元に戻しました",
-    ["auto save progress reset; restarting"] = "オートセーブの進行度をリセットして再開します",
-    ["get out this house"] = "家の外へ移動してください",
-    ["unknown number response"] = "不明な応答です",
-    ["unknown error"] = "不明なエラーです",
-    ["saved"] = "保存しました",
-    ["try again later"] = "時間をおいて再試行してください",
-    ["are you sure?"] = "確認してください",
-    ["...uhmm I think you already have gamepass"] = "すでにゲームパスを所有している可能性があります",
-    ["owned movers removed and collisions restored"] = "所有Moverを削除し、衝突設定を復元しました",
-    ["animation off; parked underground"] = "アニメーションOFF。地下へ待機させました",
-    ["selection changed; animation restarted"] = "選択を変更し、アニメーションを再開しました",
-    ["selection changed; parked underground"] = "選択を変更し、地下へ待機させました",
-    ["Bad Apple"] = "Bad Apple",
-    ["0 s error exist"] = "エラーは0件です",
-    ["LANGUAGE"] = "言語",
-    ["Japanese UI selected"] = "日本語UIを選択しました",
-    ["English UI selected"] = "英語UIを選択しました",
-    ["build Toys"] = "トイを構築",
-    ["Build Toys Required Parts"] = "Build Toys必要パーツ",
-    ["Other Toys Required Parts"] = "その他のトイの必要パーツ",
-    ["Swap Boards (Giant 1 brown / Giant 2 TwoLegs)"] = "ボード入れ替え（巨人1=茶 / 巨人2=TwoLegs）",
-    ["TOYS BUILT"] = "トイ構築完了",
-    [ [[build Toys applies everything at once and always sets up two giants
-Body: TableWoodTwoLegs or TableWoodFourLegsBrown x44 (22 per giant)
-  Left Arm x4 / Right Arm x4 / Left Leg x4 / Right Leg x4 / Torso x6
-  Normal mode with only 22 to 43 boards still builds one giant
-Head: GlassBoxGray x2 when Headless is OFF
-Korblox: TetracubeI x2 when Korblox leg is ON]] ] = [[build Toysは全てのトイを一度に適用し、常に巨人2体分を構築します
-体: TableWoodTwoLegs または TableWoodFourLegsBrown x44（巨人1体につき22）
-  左腕 x4 / 右腕 x4 / 左脚 x4 / 右脚 x4 / 胴体 x6
-  板が22〜43枚のNormalでも巨人1体は構築されます
-頭: ヘッドレスOFFのときGlassBoxGray x2
-Korblox: Korblox脚ONのときTetracubeI x2]],
-    [ [[Prepared by build Toys and kept under the map until used
-FireworkSparkler: at least x1
-Spotlight: SpotlightBlue / Green / Red / White (any amount)
-Sword: PalletLightBrown x5 per sword (x10 for two swords)]] ] = [[build Toysが準備し、使うまで地下で待機します
-FireworkSparkler: 1個以上
-Spotlight: SpotlightBlue / Green / Red / White（数は問いません）
-ソード: 1本につきPalletLightBrown x5（2本ならx10）]],
-    ["Brown Boards (FourLegsBrown)"] = "茶色の板（FourLegsBrown）",
-    ["BROWN BOARDS"] = "茶色の板",
-    ["selection saved; build the giant again to apply it"] = "選択を保存しました。反映するには巨人をもう一度組み立ててください",
-    ["Firework Wings"] = "Fireworkの翼",
-    ["-- Firework Wings --"] = "-- Fireworkの翼 --",
-    ["FIREWORK WINGS"] = "Firework翼",
-    ["wings off; parked underground"] = "翼をしまいました（地下待機）",
-    ["-- wait / assemble --"] = "-- 待機・組み立て --",
-    ["Orbit Parts While Waiting"] = "待機中のパーツを頭上で周回",
-    ["Tween Assemble (0.5s steps)"] = "Tween組み立て（0.5秒ごと）",
-    ["-- Antis --"] = "-- アンチ --",
-    ["-- Miscellaneous --"] = "-- その他 --",
-    ["-- Config --"] = "-- 設定 --",
-    ["-- Anti Net-Owner --"] = "-- アンチ ネットワークオーナー --",
-    ["-- Anti-Grabs --"] = "-- アンチグラブ --",
-    ["-- Anti-Kick --"] = "-- アンチキック --",
-    ["-- Auto Reset --"] = "-- 自動リセット --",
-    ["Anti Grab"] = "アンチグラブ",
-    ["[GUCCI] Anti Grab"] = "[GUCCI] アンチグラブ",
-    ["Anti Blobman"] = "アンチBlobman",
-    ["Anti Network Ownership"] = "アンチネットワークオーナーシップ",
-    ["Anti Explosion"] = "アンチ爆発",
-    ["Anti Burn"] = "アンチ炎上",
-    ["Anti Void"] = "アンチVoid",
-    ["Anti Kick"] = "アンチキック",
-    ["[Break PCLD] Anti Kick"] = "[PCLD破壊] アンチキック",
-    ["Anti Sticky"] = "アンチ粘着",
-    ["Anti Snowball"] = "アンチ雪玉",
-    ["Anti Banana"] = "アンチバナナ",
-    ["Anti Paint"] = "アンチペイント",
-    ["Anti Poison"] = "アンチ毒",
-    ["Anti Lag"] = "アンチラグ",
-    ["Auto Anti Lag"] = "自動アンチラグ",
-    ["Anti Invis"] = "アンチ透明化",
-    ["Auto Reset"] = "自動リセット",
-    ["Loop TP"] = "ループTP",
-    ["Disable Void"] = "Void無効化",
-    ["Water Walk"] = "水上歩行",
-    ["Noclip Barrier"] = "バリアすり抜け",
-    ["Anti-Fling [Objects Noclip]"] = "アンチフリング［物体すり抜け］",
-    ["Auto Leave"] = "自動退出",
-    ["Highlight"] = "ハイライト",
-    ["Auto Anti-Lag Sensitivity (FPS)"] = "自動アンチラグ感度（FPS）",
-    ["Grab & Drop Delay (sec) x100"] = "掴み＆落とし遅延（秒） x100",
-    ["Item Transparency x100"] = "アイテム透明度 x100",
-    ["Fill Transparency x100"] = "塗り透明度 x100",
-    ["Outline Transparency x100"] = "輪郭透明度 x100",
-    ["Shuriken Transparency x100"] = "手裏剣透明度 x100",
-    ["Anti-Grab Type"] = "アンチグラブの種類",
-    ["GUCCI Type"] = "GUCCIの種類",
-    ["Type"] = "種類",
-    ["Fill Color"] = "塗りの色",
-    ["Outline Color"] = "輪郭の色",
-    ["Below 0.05 can cause high ping"] = "0.05未満は高Pingの原因になります",
-    ["Last person who grabbed you: nobody"] = "最後にあなたを掴んだ人: なし",
-    ["Defense engine ready"] = "ディフェンスエンジン準備完了",
-    ["Defense engine is still starting (waiting for game objects)"] = "ディフェンスエンジンを起動中です（ゲーム内オブジェクト待ち）",
-    ["SWORD"] = "ソード",
-    ["-- sword build --"] = "-- ソード構築 --",
-    ["Sword Required Parts"] = "ソード必要パーツ",
-    ["PalletLightBrown x5 per sword (SoundPart 11.5, 1.5, 11.5); Double mode needs x10 for two swords"] = "ソード1本につきPalletLightBrown x5（SoundPart 11.5, 1.5, 11.5）。Doubleは2本分でx10必要です",
-    ["10 PalletLightBrown boards joined into two long blades; they follow both giants while Be Giant is ON"] = "PalletLightBrown 10枚を2本の長い板にしました。巨人化ONの間、2体の巨人に追従します",
-    ["build sword"] = "ソードを構築",
-    ["cleanup sword"] = "ソードをクリーンアップ",
-    ["-- sword mount --"] = "-- ソード取り付け位置 --",
-    ["Show Sword Switch UI"] = "ソード切替UIを表示",
-    ["Sword on Arm Tip (OFF: Back)"] = "ソードを腕先に配置（OFF: 背中）",
-    ["-- Sword Offset (Back) --"] = "-- ソード配置（背中） --",
-    ["-- Sword Offset (Arm Tip) --"] = "-- ソード配置（腕先） --",
-    ["Sword Pos X"] = "ソード位置X",
-    ["Sword Pos Y"] = "ソード位置Y",
-    ["Sword Pos Z"] = "ソード位置Z",
-    ["Sword Angle X"] = "ソード角度X",
-    ["Sword Angle Y"] = "ソード角度Y",
-    ["Sword Angle Z"] = "ソード角度Z",
-    ["Sword Pos X Value"] = "ソード位置X 値",
-    ["Sword Pos Y Value"] = "ソード位置Y 値",
-    ["Sword Pos Z Value"] = "ソード位置Z 値",
-    ["Sword Angle X Value"] = "ソード角度X 値",
-    ["Sword Angle Y Value"] = "ソード角度Y 値",
-    ["Sword Angle Z Value"] = "ソード角度Z 値",
-    ["reset sword transform"] = "配置をリセット",
-    ["SWORD ERROR"] = "ソードエラー",
-    ["SWORD BUILT"] = "ソード構築完了",
-    ["SWORD CLEANUP"] = "ソードクリーンアップ",
-    ["SWORD MODE"] = "ソードモード",
-    ["SWORD RESET"] = "ソードリセット",
-    ["SWORD UI"] = "ソード切替UI",
-    ["Arm tip selected"] = "腕先を選択しました",
-    ["Back selected"] = "背中を選択しました",
-    ["5 PalletLightBrown boards joined into one long blade; they follow the giant while Be Giant is ON"] = "PalletLightBrown 5枚を1本の長い板にしました。巨人化ONの間、巨人に追従します",
-    ["sword movers removed and original state restored"] = "ソードのMoverを削除し、元の状態に戻しました",
-    ["sword was not built"] = "ソードは構築されていません",
-    ["transform reset to default"] = "現在の配置を初期値に戻しました",
-    ["Sword switch UI shown"] = "ソード切替UIを表示しました",
-    ["Sword switch UI hidden"] = "ソード切替UIを非表示にしました",
-    ["Item: 0=NOT_FOUND | partial=ERROR | full=SUCCESS"] = "個別: 0=未検出 | 不足=エラー | 充足=成功",
-    ["Overall: 0=ERROR | partial=ATTENTION | full=SUCCESS"] = "全体: 0=エラー | 不足=注意 | 充足=成功",
-}
-
-Window._FaptaFragmentTranslations = {
-    { "Time Remaining: ", "残り時間: " },
-    { "Coins Won: ", "獲得コイン: " },
-    { "Plot Time: ", "Plot時間: " },
-    { "Plot Owner:", "Plot所有者:" },
-    { "Plot Members: ", "Plot人数: " },
-    { "Spotlight Types", "Spotlight種類" },
-    { "Source: ", "対象: " },
-    { "Mode: ", "モード: " },
-    { " | Built: ", " | 構築: " },
-    { " | Be Giant: ", " | 巨人化: " },
-    { "YES (", "はい（" },
-    { " stored / ", " 保持 / " },
-    { " active)", " 有効）" },
-    { "Source Status: ", "対象状態: " },
-    { "Overall Summary: ", "総合サマリー: " },
-    { "Body Composition:", "身体構成:" },
-    { "Body Overall: ", "身体総合: " },
-    { "Orbit Materials:", "オービット素材:" },
-    { "Orbit Overall: ", "オービット総合: " },
-    { "Left Arm", "左腕" },
-    { "Right Arm", "右腕" },
-    { "Left Leg", "左脚" },
-    { "Right Leg", "右脚" },
-    { "Reserved Right-Leg Boards", "右脚用予備板" },
-    { "Torso", "胴体" },
-    { "Head (GlassBoxGray)", "頭部（GlassBoxGray）" },
-    { "Firework State: ", "Firework状態: " },
-    { "Spotlight State: ", "Spotlight状態: " },
-    { " | controlled: ", " | 制御数: " },
-    { " | invalid size: ", " | サイズ不一致: " },
-    { " available [NOT_SELECTED]", " 個使用可能 [未選択]" },
-    { "[NOT_SELECTED]", "[未選択]" },
-    { "[NOT_FOUND]", "[未検出]" },
-    { "[ATTENTION]", "[注意]" },
-    { "[SUCCESS]", "[成功]" },
-    { "[ERROR]", "[エラー]" },
-    { "DISABLED", "無効" },
-    { "Summary update failed: ", "サマリー更新に失敗しました: " },
-    { "Selected folder is not found: ", "選択フォルダが見つかりません: " },
-    {
-        "No Plot1-Plot5 owner entry references ",
-        "Plot1～5の所有者情報に次の名前がありません: ",
-    },
-    {
-        ". Claim a plot before using Plot.",
-        "。Plotを使用する前にPlotを取得してください。",
-    },
-    { "Owned ", "所有中の " },
-    { " was found, but ", " は見つかりましたが、" },
-    { " is missing", " がありません" },
-    { " was not found", " が見つかりません" },
-    {
-        "Select at least one Spotlight type",
-        "Spotlight種類を1つ以上選択してください",
-    },
-    {
-        "No selected Spotlight objects were found in ",
-        "選択したSpotlightが見つかりません: ",
-    },
-    { "No ", "対象なし: " },
-    { " objects were found in ", " オブジェクトが見つかりません: " },
-    { "attached movers to ", "Moverを適用しました: " },
-    { " objects", " 個" },
-    { "; animation on", "、アニメーションON" },
-    {
-        " selected; press Build Toys again",
-        " を選択しました。Build Toysをもう一度押してください",
-    },
-    { " owned by ", "（所有者: " },
-    {
-        " selected; press Build Toys again",
-        "）を選択しました。Build Toysをもう一度押してください",
-    },
-    { " selected", " を選択しました" },
-    { " are required for ", " が必要です（モード: " },
-    { "; found ", "）、検出数: " },
-    { " are required; ", " が必要です。" },
-    { " available", " 個使用可能" },
-    { "mode ", "モード " },
-    { " | folder ", " | フォルダ " },
-    { " | giants ", " | 巨人数 " },
-    { " | wood ", " | 木板 " },
-    { " | active right-leg parts ", " | 使用中の右脚パーツ " },
-    { " | head parts ", " | 頭部パーツ " },
-    { "Normal", "通常" },
-    { "Double", "2体" },
-    { "Giant ", "巨人" },
-    { " Giant ", " 巨人 " },
-    { " Position --", " 位置 --" },
-    { " Offset", " オフセット" },
-    { " to ", "～" },
-    { "Sword needs ", "ソードに必要: " },
-    { "; wings on", "；翼をはばたかせます" },
-    { "Last person who grabbed you: ", "最後にあなたを掴んだ人: " },
-    { ", found ", "、検出数: " },
-}
-
-function Window:_FaptaEscapePattern(value)
-    return tostring(value):gsub("([^%w])", "%%%1")
+-- Compatibility layer for old callbacks; only GiantGroup is visible.
+local function component(default, callback)
+    local obj = { Value = default }
+    function obj:Get() return self.Value end
+    function obj:Set(value) self.Value = value; if callback then callback(value) end end
+    function obj:SetValue(value) self:Set(value) end
+    function obj:Refresh() end
+    return obj
 end
-
-function Window:_FaptaTranslateText(value)
-    local textValue = tostring(value or "")
-    if self._FaptaLanguageState.Current ~= "Japanese" then
-        return textValue
+local function makeLegacyTab(group)
+    local tab = {}
+    function tab:AddSection(_) return { Set = function() end } end
+    function tab:AddParagraph(_, _) return { Refresh = function() end, Paragraph = { IsDestroyed = function() return false end } } end
+    function tab:AddLabel(_) return {} end
+    function tab:AddButton(name, callback)
+        if group then return group:AddButton({ Text = name, Func = callback }) end
+        return {}
     end
-    local exact = self._FaptaExactTranslations[textValue]
-    if exact then
-        return exact
-    end
-    textValue = textValue:gsub("%[(%d+) selected%]", "[%1選択]")
-    for _, pair in ipairs(self._FaptaFragmentTranslations) do
-        textValue = textValue:gsub(self:_FaptaEscapePattern(pair[1]), pair[2])
-    end
-    textValue = textValue:gsub("%[(%d+)選択%]", "[%1選択]")
-    textValue = textValue:gsub("%[None%]", "[未選択]")
-    return textValue
-end
-
-function Window:_FaptaIsLanguageControlText(value)
-    local textValue = tostring(value or "")
-    return textValue:find("Language / 言語", 1, true) ~= nil
-        or textValue:find("English (Current)", 1, true) ~= nil
-        or textValue:find("日本語", 1, true) ~= nil
-end
-
-function Window:_FaptaApplyTextObject(object)
-    local state = self._FaptaLanguageState
-    if not object or not object.Parent then
-        return
-    end
-    local original = state.OriginalText[object]
-    if original == nil then
-        original = object.Text
-        state.OriginalText[object] = original
-    end
-    local target = self:_FaptaIsLanguageControlText(original) and original
-        or self:_FaptaTranslateText(original)
-    if object.Text ~= target then
-        local wasApplying = state.Applying
-        state.Applying = true
-        object.Text = target
-        state.Applying = wasApplying
-    end
-    if object:IsA("TextBox") then
-        local originalPlaceholder = state.OriginalPlaceholder[object]
-        if originalPlaceholder == nil then
-            originalPlaceholder = object.PlaceholderText
-            state.OriginalPlaceholder[object] = originalPlaceholder
+    function tab:AddToggle(name, default, callback)
+        if group then
+            group:AddToggle("Legacy_" .. tostring(name):gsub("[^%w]", "_"), { Text = name, Default = default == true, Callback = callback })
         end
-        local placeholderTarget = self:_FaptaTranslateText(originalPlaceholder)
-        if object.PlaceholderText ~= placeholderTarget then
-            local wasApplying = state.Applying
-            state.Applying = true
-            object.PlaceholderText = placeholderTarget
-            state.Applying = wasApplying
+        return component(default == true, callback)
+    end
+    function tab:AddDropdown(name, values, callback)
+        if group then
+            group:AddDropdown("Legacy_" .. tostring(name):gsub("[^%w]", "_"), { Text = name, Values = values, Default = values[1], Callback = callback })
         end
+        return component(values[1], callback)
     end
+    function tab:AddMultiDropdown() return component({}) end
+    function tab:AddSlider() return component(0) end
+    function tab:AddTextbox() return component("") end
+    function tab:AddColorPicker() return component(Color3.new(1, 1, 1)) end
+    return tab
 end
-
-function Window:_FaptaTrackTextObject(object)
-    if
-        not object
-        or not (object:IsA("TextLabel") or object:IsA("TextButton") or object:IsA("TextBox"))
-        or self._FaptaLanguageState.Connections[object]
-    then
-        return
-    end
-    local state = self._FaptaLanguageState
-    state.OriginalText[object] = object.Text
-    state.Connections[object] = object:GetPropertyChangedSignal("Text"):Connect(function()
-        if state.Applying or not object.Parent then
-            return
-        end
-        state.OriginalText[object] = object.Text
-        self:_FaptaApplyTextObject(object)
-    end)
-    if object:IsA("TextBox") then
-        state.OriginalPlaceholder[object] = object.PlaceholderText
-        state.PlaceholderConnections[object] = object
-            :GetPropertyChangedSignal("PlaceholderText")
-            :Connect(function()
-                if state.Applying or not object.Parent then
-                    return
-                end
-                state.OriginalPlaceholder[object] = object.PlaceholderText
-                self:_FaptaApplyTextObject(object)
-            end)
-    end
-    self:_FaptaApplyTextObject(object)
+local VisibleTab = makeLegacyTab(GiantGroup)
+local NullTab = makeLegacyTab(nil)
+Window._InfoTab = NullTab
+local ReanimateTab = VisibleTab
+Window._SwordTab = NullTab
+local SettingTab = NullTab
+Window._OthersTab = NullTab
+local AutoTab = NullTab
+local DefenseTab = NullTab
+local StaffTab = NullTab
+Window.Notify = function(_, title, text, duration)
+    Library:Notify({ Title = tostring(title), Description = tostring(text), Time = duration or 4 })
 end
+Window._FaptaTranslateText = function(_, text) return text end
+Window._ScreenGui = game:GetService("CoreGui")
+Window.GetSize = function() return Vector2.new(500, 500) end
+Window.SetSize = function() end
 
-function Window:_FaptaRefreshLanguageUI()
-    for _, object in ipairs(self._ScreenGui:GetDescendants()) do
-        self:_FaptaTrackTextObject(object)
-        if object:IsA("TextLabel") or object:IsA("TextButton") or object:IsA("TextBox") then
-            self:_FaptaApplyTextObject(object)
-        end
-    end
-    if self._FaptaBuildSummary then
-        self._FaptaBuildSummary:Refresh()
-    end
-end
-
-function Window:_FaptaSetLanguage(language)
-    self._FaptaLanguageState.Current = language == "Japanese" and "Japanese" or "English"
-    self:_FaptaRefreshLanguageUI()
-end
-
-Window._FaptaOriginalNotify = Window.Notify
-function Window:Notify(title, message, duration)
-    return self._FaptaOriginalNotify(
-        self,
-        self:_FaptaTranslateText(title),
-        self:_FaptaTranslateText(message),
-        duration
-    )
-end
-
-Window._FaptaLanguageState.DescendantConnection = Window._ScreenGui.DescendantAdded:Connect(
-    function(object)
-        task.defer(function()
-            if object and object.Parent then
-                Window:_FaptaTrackTextObject(object)
-            end
-        end)
-    end
-)
-Window:_FaptaRefreshLanguageUI()
+-- Legacy localization omitted; Obsidian renders the single Giant tab.
 -- Player reference and immutable giant assembly configuration
 local LP = Players.LocalPlayer
 local TOY_NAME = "TableWoodTwoLegs"
@@ -1150,7 +691,7 @@ GiantModeDropdown = ReanimateTab:AddDropdown("Giant Mode", GIANT_MODE_OPTIONS, f
     end
     Window:Notify("GIANT MODE", option .. " selected", 4)
 end)
-GiantTraceToggle = ReanimateTab:AddToggle("Be Giant", false, function(value)
+GiantTraceToggle = ReanimateTab:AddToggle("Giant", false, function(value)
     local wasTracing = isTracing
     isTracing = value
     if value and not wasTracing then
@@ -1494,7 +1035,7 @@ end)
     ArmToggle = SwordTab:AddToggle("Sword on Arm Tip (OFF: Back)", false, function(value)
         setArmMode(value)
     end)
-    SwordTab:AddToggle("Sword Swing", false, function(value)
+    SwordTab:AddToggle("_Hidden Sword Swing", false, function(value)
         Sword.SwingEnabled = value
         Sword.SwingStart = os.clock()
         Window:Notify("SWORD SWING", value and "sword swing enabled" or "sword swing disabled", 3)
@@ -1529,6 +1070,16 @@ end)
         Window:Notify("SWORD RESET", "transform reset to default", 3)
     end)
 end)()
+
+GiantGroup:AddToggle("Slowd", {
+    Text = "Slowd",
+    Default = false,
+    Callback = function(value)
+        Window._FaptaSword.SwingEnabled = value
+        Window._FaptaSword.SwingStart = os.clock()
+        Window:Notify("SWORD SWING", value and "enabled" or "disabled", 3)
+    end,
+})
 
 -- SETTING tab controls
 SettingTab:AddSection("-- Giant Settings --")
