@@ -47,14 +47,32 @@ local function makeLegacyTab(group)
         return {}
     end
     function tab:AddToggle(name, default, callback)
-        if group then
-            group:AddToggle("Legacy_" .. tostring(name):gsub("[^%w]", "_"), { Text = name, Default = default == true, Callback = callback })
+        if group and name == "Giant" then
+            local control = group:AddToggle("Giant", {
+                Text = "Giant",
+                Default = default == true,
+                Callback = callback,
+            })
+            local wrapper = component(default == true)
+            function wrapper:Get() return control.Value end
+            function wrapper:Set(value) control:SetValue(value == true) end
+            return wrapper
         end
         return component(default == true, callback)
     end
     function tab:AddDropdown(name, values, callback)
-        if group then
-            group:AddDropdown("Legacy_" .. tostring(name):gsub("[^%w]", "_"), { Text = name, Values = values, Default = values[1], Callback = callback })
+        if group and name == "Giant Mode" then
+            local control = group:AddDropdown("GiantMode", {
+                Text = "Giant Mode",
+                Values = values,
+                Default = values[1],
+                Multi = false,
+                Callback = callback,
+            })
+            local wrapper = component(values[1])
+            function wrapper:Get() return control.Value end
+            function wrapper:Set(value) control:SetValue(value) end
+            return wrapper
         end
         return component(values[1], callback)
     end
