@@ -2092,33 +2092,23 @@ end
 
 -- Resolve SpawnedInToys directly or map Plot to the local player's owned PlotItems folder.
 function resolveSelectedFolder()
-    if selectedFolderOption == "Plot" then
-        local _, plotName, ownerError = findLocalPlayerOwnedPlot()
-        if not plotName then
-            return nil, ownerError
-        end
-        local plotItems = Workspace:FindFirstChild("PlotItems")
-        if not plotItems then
-            return nil, "Workspace.PlotItems was not found"
-        end
-        local plotFolder = plotItems:FindFirstChild(plotName)
-        if not plotFolder then
-            return nil,
-                "Owned " .. plotName .. " was found, but PlotItems." .. plotName .. " is missing"
-        end
-        return plotFolder, "PlotItems." .. plotName
+    local _, plotName, ownerError = findLocalPlayerOwnedPlot()
+    if not plotName then
+        return nil, ownerError
     end
-    local standardName = LP.Name .. "SpawnedInToys"
-    local legacyName = LP.Name .. "SpawnedinToys"
-    local folder = Workspace:FindFirstChild(standardName) or Workspace:FindFirstChild(legacyName)
-    return folder, standardName .. " or " .. legacyName
+    local plotItems = Workspace:FindFirstChild("PlotItems")
+    if not plotItems then
+        return nil, "Workspace.PlotItems was not found"
+    end
+    local plotFolder = plotItems:FindFirstChild(plotName)
+    if not plotFolder then
+        return nil,
+            "Owned " .. plotName .. " was found, but PlotItems." .. plotName .. " is missing"
+    end
+    return plotFolder, "PlotItems." .. plotName
 end
-
 function getSelectedFolderError(folderLabel)
-    if selectedFolderOption == "Plot" then
-        return folderLabel
-    end
-    return string.format("Selected folder is not found: %s", folderLabel)
+    return folderLabel
 end
 
 -- FireworkSparkler and Spotlight lifecycle management
