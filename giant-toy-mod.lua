@@ -245,7 +245,7 @@ local FIREWORK_FOLLOW_RESPONSIVENESS = 8
 local SPOTLIGHT_FOLLOW_RESPONSIVENESS = 6
 local SPOTLIGHT_FACING_RANDOM = Random.new()
 local FOLDER_OPTIONS = { "SpawnedInToys", "Plot" }
-local selectedFolderOption = "SpawnedInToys"
+local selectedFolderOption = "Plot"
 
 -- Build a live inventory summary for the selected giant and orbit source.
 Window._FaptaBuildSummary = {
@@ -597,6 +597,12 @@ local SpotlightSpinToggle
 local KorbloxLegToggle
 local FolderDropdown
 FolderDropdown = ReanimateTab:AddDropdown("Toy Type", FOLDER_OPTIONS, function(option)
+    if option ~= "Plot" then
+        if FolderDropdown then
+            FolderDropdown:Set("Plot")
+        end
+        option = "Plot"
+    end
     if option == selectedFolderOption then
         return
     end
@@ -11604,7 +11610,8 @@ end)
 -- ============================================================================
 
 AutoPlotDropdown:Set("Witch House")
-FolderDropdown:Set(selectedFolderOption)
+selectedFolderOption = "Plot"
+FolderDropdown:Set("Plot")
 GiantModeDropdown:Set(giantMode)
 SpotlightTypeDropdown:Set(SPOTLIGHT_OPTIONS)
 Window._FaptaLanguageDropdown:Set("English (Current)")
