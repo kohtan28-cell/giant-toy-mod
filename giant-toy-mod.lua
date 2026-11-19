@@ -762,9 +762,29 @@ local GiantControl = GiantGroup:AddToggle("GiantVisible", {
     Text = "Giant",
     Default = false,
     Callback = function(value)
-        if GiantTraceToggle then
-            GiantTraceToggle:Set(value)
+        if not GiantTraceToggle then
+            return
         end
+        if not value then
+            GiantTraceToggle:Set(false)
+            return
+        end
+        task.spawn(function()
+            local ok, result = pcall(function()
+                if not isBuilt then
+                    local spawned = autoSpawnRequiredToys()
+                    if not spawned then
+                        return false
+                    end
+                end
+                GiantTraceToggle:Set(true)
+                return isBuilt and isTracing
+            end)
+            if not ok or not result then
+                Window:Notify("GIANT", "Plot toys could not be spawned or built", 7)
+                GiantControl:SetValue(false)
+            end
+        end)
     end,
 })
 ReanimateTab:AddSection("-- super necessity --")
