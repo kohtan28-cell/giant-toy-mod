@@ -81,7 +81,7 @@ local function makeLegacyTab(group)
     function tab:AddColorPicker() return component(Color3.new(1, 1, 1)) end
     return tab
 end
-local VisibleTab = makeLegacyTab(GiantGroup)
+local VisibleTab = makeLegacyTab(nil)
 local NullTab = makeLegacyTab(nil)
 Window._InfoTab = NullTab
 local ReanimateTab = VisibleTab
@@ -730,6 +730,26 @@ GiantTraceToggle = ReanimateTab:AddToggle("Giant", false, function(value)
         end
     end
 end)
+local GiantModeControl = GiantGroup:AddDropdown("GiantModeVisible", {
+    Text = "Giant Mode",
+    Values = GIANT_MODE_OPTIONS,
+    Default = giantMode,
+    Multi = false,
+    Callback = function(value)
+        if GiantModeDropdown then
+            GiantModeDropdown:Set(value)
+        end
+    end,
+})
+local GiantControl = GiantGroup:AddToggle("GiantVisible", {
+    Text = "Giant",
+    Default = false,
+    Callback = function(value)
+        if GiantTraceToggle then
+            GiantTraceToggle:Set(value)
+        end
+    end,
+})
 ReanimateTab:AddSection("-- super necessity --")
 ReanimateTab:AddButton("BarrierBreak", function()
     runAutoSave()
