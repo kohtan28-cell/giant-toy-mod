@@ -772,8 +772,8 @@ local GiantControl = GiantGroup:AddToggle("GiantVisible", {
         task.spawn(function()
             local ok, result = pcall(function()
                 if not isBuilt then
-                    local spawned = autoSpawnRequiredToys()
-                    if not spawned then
+                    local built = Window._FaptaToys.Build()
+                    if not built or not isBuilt then
                         return false
                     end
                 end
@@ -781,7 +781,7 @@ local GiantControl = GiantGroup:AddToggle("GiantVisible", {
                 return isBuilt and isTracing
             end)
             if not ok or not result then
-                Window:Notify("GIANT", "Plot toys could not be spawned or built", 7)
+                Window:Notify("GIANT", "Build failed; place the required toys in your Plot first", 7)
                 GiantControl:SetValue(false)
             end
         end)
