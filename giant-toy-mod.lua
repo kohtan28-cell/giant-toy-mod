@@ -716,6 +716,17 @@ GiantModeDropdown = ReanimateTab:AddDropdown("Giant Mode", GIANT_MODE_OPTIONS, f
     Window:Notify("GIANT MODE", option .. " selected", 4)
 end)
 GiantTraceToggle = ReanimateTab:AddToggle("Giant", false, function(value)
+    if value and not isBuilt then
+        local built = Window._FaptaToys.Build()
+        if not built or not isBuilt then
+            Window:Notify("GIANT", "Build failed; check Plot toys", 6)
+            isTracing = false
+            if GiantTraceToggle:Get() then
+                GiantTraceToggle:Set(false)
+            end
+            return
+        end
+    end
     local wasTracing = isTracing
     isTracing = value
     if value and not wasTracing then
