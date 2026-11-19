@@ -2084,8 +2084,8 @@ end
 
 -- Share the PLOT tab's ThisPlotsOwners data with the giant source selector.
 local function isPlotOwnedByLocalPlayer(plotModel)
-    local plotSign = plotModel and plotModel:FindFirstChild("PlotSign")
-    local owners = plotSign and plotSign:FindFirstChild("ThisPlotsOwners")
+    local plotSign = plotModel and plotModel:FindFirstChild("PlotSign", true)
+    local owners = plotSign and plotSign:FindFirstChild("ThisPlotsOwners", true)
     if not owners then
         return false
     end
@@ -3224,7 +3224,8 @@ function buildGiant()
     local woodCandidates = {}
     local brownCandidates = {}
     local headCandidates = {}
-    for _, child in ipairs(folder:GetChildren()) do
+    -- PlotItems may contain an extra folder/model layer; scan all descendants.
+    for _, child in ipairs(folder:GetDescendants()) do
         if child:IsA("Model") then
             if child.Name == TOY_NAME then
                 local soundPart = findMatchingSoundPart(child)
