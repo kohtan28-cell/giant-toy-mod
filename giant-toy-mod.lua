@@ -26,7 +26,7 @@ local Window = Library:CreateWindow({
     ShowCustomCursor = false,
 })
 local GiantTab = Window:AddTab("Giant", "user")
-local GiantGroup = GiantTab:AddLeftGroupbox({ Name = "Giant Controls", IconName = "move-3d" })
+local GiantGroup = GiantTab:AddLeftGroupbox("Giant Controls")
 
 -- Compatibility layer for old callbacks; only GiantGroup is visible.
 local function component(default, callback)
@@ -43,7 +43,6 @@ local function makeLegacyTab(group)
     function tab:AddParagraph(_, _) return { Refresh = function() end, Paragraph = { IsDestroyed = function() return false end } } end
     function tab:AddLabel(_) return {} end
     function tab:AddButton(name, callback)
-        if group then return group:AddButton({ Text = name, Func = callback }) end
         return {}
     end
     function tab:AddToggle(name, default, callback)
