@@ -202,7 +202,7 @@ local giantOffsets = {
     Vector3.zero,
     Vector3.zero,
 }
-local headlessEnabled = true
+local headlessEnabled = false
 local korbloxLegEnabled = false
 local giantMovementScaleEnabled = true
 local fireworkSpinEnabled = false
@@ -3229,7 +3229,7 @@ function buildGiant()
         end
 
         -- One glass box per giant.
-        local headCandidate = headlessEnabled and nil or headCandidates[assemblyIndex]
+        local headCandidate = headCandidates[assemblyIndex]
         if headCandidate then
             table.insert(assembly.HeadParts, makePartData(headCandidate.Model, headCandidate.Part))
         end
