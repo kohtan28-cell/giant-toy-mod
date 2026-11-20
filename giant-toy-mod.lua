@@ -1170,7 +1170,7 @@ end)
 end)()
 
 local SwordSwitchButton
-local SwordSlashButton
+local SwordSlashToggle
 GiantGroup:AddToggle("Sword", {
     Text = "Sword",
     Default = false,
@@ -1186,8 +1186,8 @@ GiantGroup:AddToggle("Sword", {
             if SwordSwitchButton then
                 SwordSwitchButton:SetVisible(false)
             end
-            if SwordSlashButton then
-                SwordSlashButton:SetVisible(false)
+            if SwordSlashToggle and SwordSlashToggle.Value then
+                SwordSlashToggle:SetValue(false)
             end
             sword.SetSwitchVisible(false)
         elseif not isBuilt or next(sword.Sets) == nil then
@@ -1218,13 +1218,23 @@ SwordSwitchButton = GiantGroup:AddButton({
         end
     end,
 })
-SwordSlashButton = GiantGroup:AddButton({
+SwordSlashToggle = GiantGroup:AddToggle("SwordSlashToggle", {
     Text = "Slash",
-    Visible = false,
-    Func = function()
-        if Window._FaptaSword.StartSlash then
-            Window._FaptaSword.StartSlash()
+    Default = false,
+    Callback = function(value)
+        local sword = Window._FaptaSword
+        if not value then
+            sword.SlashActive = false
+            return
         end
+        if sword.StartSlash then
+            sword.StartSlash()
+        end
+        task.delay(sword.SlashDuration + 0.05, function()
+            if SwordSlashToggle and SwordSlashToggle.Value then
+                SwordSlashToggle:SetValue(false)
+            end
+        end)
     end,
 })
 
