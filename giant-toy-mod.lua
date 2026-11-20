@@ -28,7 +28,6 @@ local Window = Library:CreateWindow({
 })
 local GiantTab = Window:AddTab("Giant", "user")
 local GiantGroup = GiantTab:AddLeftGroupbox("Giant Controls")
-local SwordSlashToggle
 
 -- Compatibility layer for old callbacks; only GiantGroup is visible.
 local function component(default, callback)
@@ -771,33 +770,6 @@ local GiantControl = GiantGroup:AddToggle("GiantVisible", {
         end)
     end,
 })
-SwordSlashToggle = GiantGroup:AddToggle("SwordSlashToggle", {
-    Text = "Slash",
-    Default = false,
-    Callback = function(value)
-        local sword = Window._FaptaSword
-        if not sword then
-            return
-        end
-        if not value then
-            sword.SlashActive = false
-            return
-        end
-        if not sword.Enabled then
-            Window:Notify("SLASH", "先にSwordをONにしてください", 4)
-            SwordSlashToggle:SetValue(false)
-            return
-        end
-        if sword.StartSlash then
-            sword.StartSlash()
-        end
-        task.delay((sword.SlashDuration or 0.8) + 0.05, function()
-            if SwordSlashToggle and SwordSlashToggle.Value then
-                SwordSlashToggle:SetValue(false)
-            end
-        end)
-    end,
-})
 ReanimateTab:AddSection("-- super necessity --")
 ReanimateTab:AddButton("BarrierBreak", function()
     runAutoSave()
@@ -1198,6 +1170,7 @@ end)
 end)()
 
 local SwordSwitchButton
+local SwordSlashToggle
 GiantGroup:AddToggle("Sword", {
     Text = "Sword",
     Default = false,
@@ -1240,6 +1213,33 @@ SwordSwitchButton = GiantGroup:AddButton({
         if sword.SetArmMode then
             sword.SetArmMode(not sword.ArmMode)
         end
+    end,
+})
+SwordSlashToggle = GiantGroup:AddToggle("Slash", {
+    Text = "Slash",
+    Default = false,
+    Callback = function(value)
+        local sword = Window._FaptaSword
+        if not sword then
+            return
+        end
+        if not value then
+            sword.SlashActive = false
+            return
+        end
+        if not sword.Enabled then
+            Window:Notify("SLASH", "先にSwordをONにしてください", 4)
+            SwordSlashToggle:SetValue(false)
+            return
+        end
+        if sword.StartSlash then
+            sword.StartSlash()
+        end
+        task.delay((sword.SlashDuration or 0.8) + 0.05, function()
+            if SwordSlashToggle and SwordSlashToggle.Value then
+                SwordSlashToggle:SetValue(false)
+            end
+        end)
     end,
 })
 
