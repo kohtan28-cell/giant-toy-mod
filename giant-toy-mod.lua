@@ -3076,7 +3076,13 @@ function buildGiant()
     local headCandidates = {}
     -- PlotItems may contain an extra folder/model layer; scan all descendants.
     for _, child in ipairs(folder:GetDescendants()) do
-        if child:IsA("Model") then
+        if child.Name == HEAD_TOY_NAME then
+            local part = child:IsA("BasePart") and child
+                or child:FindFirstChildWhichIsA("BasePart", true)
+            if part then
+                table.insert(headCandidates, { Model = child, Part = part })
+            end
+        elseif child:IsA("Model") then
             if child.Name == TOY_NAME then
                 local soundPart = findMatchingSoundPart(child)
                 if soundPart then
@@ -3087,14 +3093,7 @@ function buildGiant()
                 if boardPart then
                     table.insert(brownCandidates, { Model = child, Part = boardPart })
                 end
-            elseif child.Name == HEAD_TOY_NAME then
-                local part = getHeadModelPart(child)
-                if part then
-                    table.insert(headCandidates, { Model = child, Part = part })
-                end
             end
-        elseif child:IsA("BasePart") and child.Name == HEAD_TOY_NAME then
-            table.insert(headCandidates, { Model = child, Part = child })
         end
     end
 
@@ -3115,6 +3114,15 @@ function buildGiant()
     -- start with one giant when only 22 to 43 boards are available.
     local boardTotal = #woodCandidates + #brownCandidates
     local assemblyCount = boardTotal >= 44 and 2 or 1
+    local requiredHeadCount = giantMode == "Double" and 2 or 1
+    if #headCandidates < requiredHeadCount then
+        Window:Notify(
+            "BUILD ERROR",
+            string.format("GlassBoxGray is required: found %d/%d in %s", #headCandidates, requiredHeadCount, folder.Name),
+            7
+        )
+        return false
+    end
     local neededBoards = (assemblyCount == 2 or giantMode == "Double") and 44 or 22
     if boardTotal < neededBoards then
         Window:Notify(
