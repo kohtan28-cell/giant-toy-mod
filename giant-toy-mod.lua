@@ -3093,6 +3093,8 @@ function buildGiant()
                     table.insert(headCandidates, { Model = child, Part = part })
                 end
             end
+        elseif child:IsA("BasePart") and child.Name == HEAD_TOY_NAME then
+            table.insert(headCandidates, { Model = child, Part = child })
         end
     end
 
