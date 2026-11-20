@@ -1177,9 +1177,6 @@ GiantGroup:AddToggle("Sword", {
     Callback = function(value)
         local sword = Window._FaptaSword
         sword.Enabled = value == true
-        if SwordSlashButton then
-            SwordSlashButton:SetVisible(value == true)
-        end
         if not sword.Enabled then
             sword.SwingEnabled = false
             sword.Park()
