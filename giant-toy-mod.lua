@@ -167,9 +167,6 @@ Window._FaptaSword = {
     WaitSlotBase = 129,
     Sets = {},
     Enabled = false,
-    SlashActive = false,
-    SlashStart = 0,
-    SlashDuration = 0.7,
     ArmMode = false,
     SwingEnabled = false,
     SwingStart = 0,
@@ -761,6 +758,7 @@ local GiantControl = GiantGroup:AddToggle("GiantVisible", {
                     end
                 end
                 GiantTraceToggle:Set(true)
+                Window:Notify("Set Giant!", "", 3)
                 return isBuilt and isTracing
             end)
             if not ok or not result then
@@ -902,40 +900,6 @@ end)
         end
         Window:Notify("SWORD MODE", Sword.ArmMode and "Arm tip selected" or "Back selected", 3)
     end
-    local function slashImpact(position)
-        local part = Instance.new("Part")
-        part.Name = "LocalSwordImpact"
-        part.Anchored = true
-        part.CanCollide = false
-        part.CanTouch = false
-        part.CanQuery = false
-        part.Material = Enum.Material.Neon
-        part.Color = Color3.fromRGB(255, 220, 80)
-        part.Shape = Enum.PartType.Cylinder
-        part.Size = Vector3.new(0.15, 2, 2)
-        part.CFrame = CFrame.new(position) * CFrame.Angles(0, 0, math.rad(90))
-        part.Parent = Workspace
-        local tween = TweenService:Create(part, TweenInfo.new(0.35), {
-            Size = Vector3.new(0.15, 18, 18),
-            Transparency = 1,
-        })
-        tween:Play()
-        tween.Completed:Connect(function()
-            if part then
-                part:Destroy()
-            end
-        end)
-    end
-    Sword.StartSlash = function()
-        if not Sword.Enabled or not isBuilt or not isTracing then
-            Window:Notify("SWORD", "Enable Sword while Giant is active first", 4)
-            return
-        end
-        Sword.SlashActive = true
-        Sword.SlashStart = os.clock()
-    end
-    Sword.SpawnSlashImpact = slashImpact
-
     -- Floating switch UI: B = Back (red), A = Arm Tip (green), x = hide, arrows = drag.
     local function createSwitchUi()
         local playerGui = LP:WaitForChild("PlayerGui")
@@ -1170,7 +1134,6 @@ end)
 end)()
 
 local SwordSwitchButton
-local SwordSlashToggle
 GiantGroup:AddToggle("Sword", {
     Text = "Sword",
     Default = false,
@@ -1182,9 +1145,6 @@ GiantGroup:AddToggle("Sword", {
             sword.Park()
             if SwordSwitchButton then
                 SwordSwitchButton:SetVisible(false)
-            end
-            if SwordSlashToggle and SwordSlashToggle.Value then
-                SwordSlashToggle:SetValue(false)
             end
             sword.SetSwitchVisible(false)
         elseif not isBuilt or next(sword.Sets) == nil then
@@ -1215,34 +1175,6 @@ SwordSwitchButton = GiantGroup:AddButton({
         end
     end,
 })
-SwordSlashToggle = GiantGroup:AddToggle("Slash", {
-    Text = "Slash",
-    Default = false,
-    Callback = function(value)
-        local sword = Window._FaptaSword
-        if not sword then
-            return
-        end
-        if not value then
-            sword.SlashActive = false
-            return
-        end
-        if not sword.Enabled then
-            Window:Notify("SLASH", "先にSwordをONにしてください", 4)
-            SwordSlashToggle:SetValue(false)
-            return
-        end
-        if sword.StartSlash then
-            sword.StartSlash()
-        end
-        task.delay((sword.SlashDuration or 0.8) + 0.05, function()
-            if SwordSlashToggle and SwordSlashToggle.Value then
-                SwordSlashToggle:SetValue(false)
-            end
-        end)
-    end,
-})
-
 -- SETTING tab controls
 SettingTab:AddSection("-- Giant Settings --")
 SettingTab:AddToggle("Toggle 7x Giant Movement", true, function(value)
@@ -3720,28 +3652,6 @@ function tracePlayer()
                         giantTorsoCF,
                         limb.CFrame
                     ) * limbAxisAlignment
-                end
-            end
-            local swordState = Window._FaptaSword
-            if swordState.SlashActive then
-                local slashElapsed = os.clock() - swordState.SlashStart
-                if slashElapsed >= swordState.SlashDuration then
-                    swordState.SlashActive = false
-                    local impactPosition = humanoidRootPart.Position + humanoidRootPart.CFrame.LookVector * 8
-                    if swordState.SpawnSlashImpact then
-                        swordState.SpawnSlashImpact(impactPosition - Vector3.new(0, 3, 0))
-                    end
-                else
-                    local phase = math.clamp(slashElapsed / swordState.SlashDuration, 0, 1)
-                    local eased = phase * phase * (3 - 2 * phase)
-                    local pitch = math.rad(-55 + 125 * eased)
-                    local slashRotation = CFrame.Angles(pitch, 0, 0)
-                    if limbTargetCFs[1] then
-                        limbTargetCFs[1] = limbTargetCFs[1] * slashRotation
-                    end
-                    if limbTargetCFs[2] then
-                        limbTargetCFs[2] = limbTargetCFs[2] * slashRotation
-                    end
                 end
             end
             if Window._FaptaSword.Animate then
