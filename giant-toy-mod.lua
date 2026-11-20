@@ -165,6 +165,7 @@ Window._FaptaSword = {
     PartCount = 3,
     WaitSlotBase = 129,
     Sets = {},
+    Enabled = false,
     ArmMode = false,
     SwingEnabled = false,
     SwingStart = 0,
@@ -201,7 +202,7 @@ local giantOffsets = {
     Vector3.zero,
     Vector3.zero,
 }
-local headlessEnabled = false
+local headlessEnabled = true
 local korbloxLegEnabled = false
 local giantMovementScaleEnabled = true
 local fireworkSpinEnabled = false
@@ -1059,6 +1060,13 @@ end)
 
     SwitchGui, SwitchButton, SwitchEndDrag = createSwitchUi()
     updateSwitchButton()
+    Sword.SetArmMode = setArmMode
+    Sword.SetSwitchVisible = function(value)
+        SwitchGui.Enabled = value == true
+        if not value and SwitchEndDrag then
+            SwitchEndDrag()
+        end
+    end
 
     -- SWORD tab controls
     SwordTab:AddSection("-- sword build --")
@@ -1124,13 +1132,42 @@ end)
     end)
 end)()
 
-GiantGroup:AddToggle("Slowd", {
-    Text = "Slowd",
+GiantGroup:AddToggle("Sword", {
+    Text = "Sword",
     Default = false,
     Callback = function(value)
-        Window._FaptaSword.SwingEnabled = value
-        Window._FaptaSword.SwingStart = os.clock()
-        Window:Notify("SWORD SWING", value and "enabled" or "disabled", 3)
+        local sword = Window._FaptaSword
+        sword.Enabled = value == true
+        if not sword.Enabled then
+            sword.SwingEnabled = false
+            sword.Park()
+        elseif not isBuilt or next(sword.Sets) == nil then
+            Window:Notify("SWORD", "Build the giant first", 5)
+            sword.Enabled = false
+            return
+        end
+        Window:Notify("SWORD", sword.Enabled and "enabled" or "disabled", 3)
+    end,
+})
+local SwordSwitchButton
+GiantGroup:AddToggle("SwordSwitchButtonToggle", {
+    Text = "Sword Switch Button",
+    Default = false,
+    Callback = function(value)
+        if SwordSwitchButton then
+            SwordSwitchButton:SetVisible(value == true)
+        end
+        Window._FaptaSword.SetSwitchVisible(value)
+    end,
+})
+SwordSwitchButton = GiantGroup:AddButton({
+    Text = "Hold Sword / Back",
+    Visible = false,
+    Func = function()
+        local sword = Window._FaptaSword
+        if sword.SetArmMode then
+            sword.SetArmMode(not sword.ArmMode)
+        end
     end,
 })
 
@@ -3192,7 +3229,7 @@ function buildGiant()
         end
 
         -- One glass box per giant.
-        local headCandidate = headCandidates[assemblyIndex]
+        local headCandidate = headlessEnabled and nil or headCandidates[assemblyIndex]
         if headCandidate then
             table.insert(assembly.HeadParts, makePartData(headCandidate.Model, headCandidate.Part))
         end
@@ -11119,6 +11156,9 @@ end)
     -- giant arm (only the giant arm moves, never the real character). The sword is on the back
     -- until the hold ends and in the hand afterwards; both poses match at that moment.
     function Sword.Animate(index, giantTorsoCF, realArmCF)
+        if not Sword.Enabled then
+            return realArmCF
+        end
         local anim = Sword.Anims[index]
         if not anim or not realArmCF then
             return realArmCF
@@ -11152,6 +11192,10 @@ end)
     -- Sword movement: called every frame by tracePlayer for each traced giant.
     -- rightArmCF is the animated arm frame while a draw / sheathe animation runs.
     function Sword.Update(index, giantTorsoCF, rightArmCF)
+        if not Sword.Enabled then
+            parkSwordSet(index)
+            return
+        end
         if index == 1 and giantMode ~= "Double" and Sword.Sets[2] then
             -- Normal mode only has one giant, so the second sword waits underground.
             parkSwordSet(2)
